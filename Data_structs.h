@@ -12,7 +12,7 @@ typedef struct _env{
 }Env;
 
 typedef struct _statement{
-    
+
     union _expr *expr
 }Statement;
 #endif //IC10_INTERPRETER_DATA_STRUCTS_H
