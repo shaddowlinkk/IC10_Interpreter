@@ -1,6 +1,8 @@
 #include <stdio.h>
-
+#include "Lexer.h"
+#include "Data_structs.h"
 int main() {
-    printf("Hello, World!\n");
-    return 0;
+    TokenNode *list;
+    Lexer("tst.txt");
+    printf("done");
 }
