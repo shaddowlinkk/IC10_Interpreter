@@ -156,7 +156,8 @@ struct commandToken commandList[]={
         {"r14",TT_REG},
         {"r15",TT_REG},
         {"r16",TT_REG},
-        {"r17",TT_REG}
+        {"r17",TT_REG},
+        {"db",TT_DEVICE}
 };
 
 
@@ -192,6 +193,7 @@ void skipComments(char *data,int *pos){
         *pos=(*pos)+1;
     }
 }
+
 char *GetNextString(char *data,int *pos) {
     char *temp= malloc(100);
     memset(temp,'\0',100);
@@ -200,9 +202,17 @@ char *GetNextString(char *data,int *pos) {
     while (data[*pos]!=' '&& data[*pos]!='\n' && data[*pos]!='\0') {
         strncat(temp,&data[*pos],1);
         *pos=(*pos)+1;
+        if(strcmp(temp,"HASH")==0){
+            while (data[*pos]!= ')'){
+                strncat(temp,&data[*pos],1);
+                *pos=(*pos)+1;
+            }
+
+        }
     }
     return temp;
 }
+
 TokenNode *Lex(char *fileData){
     TokenNode *list= NULL;
     int pos=0;
@@ -221,6 +231,30 @@ TokenNode *Lex(char *fileData){
             new2->tokenType=TT_NUM;
             new2->string=lit;
             AddToken(&list, NewToken(new2));
+            memset(curString,'\0',((sizeof(char))*100));
+        }else if (strncmp(curString,"HASH",4)==0) {
+            char *lit= malloc(strlen(curString)+1);
+            strncpy(lit,curString, strlen(curString)+1);
+            Token *nl = malloc(sizeof(Token));
+            nl->tokenType=TT_HASH;
+            nl->string=lit;
+            AddToken(&list, NewToken(nl));
+            memset(curString,'\0',((sizeof(char))*100));
+        }else if (strncmp((curString+(strlen(curString)-2)),":",1)==0 && strncmp(curString,"d",1)==0) {//< need to add for labels
+            char *lit= malloc(strlen(curString)+1);
+            strncpy(lit,curString, strlen(curString)+1);
+            Token *nl = malloc(sizeof(Token));
+            nl->tokenType=TT_DEVICE_CON;
+            nl->string=lit;
+            AddToken(&list, NewToken(nl));
+            memset(curString,'\0',((sizeof(char))*100));
+        }else if (strncmp((curString+(strlen(curString)-1)),":",1)==0) {//< need to add for labels
+            char *lit= malloc(strlen(curString)+1);
+            strncpy(lit,curString, strlen(curString)+1);
+            Token *nl = malloc(sizeof(Token));
+            nl->tokenType=TT_LABEL;
+            nl->string=lit;
+            AddToken(&list, NewToken(nl));
             memset(curString,'\0',((sizeof(char))*100));
         }else{
             char *lit= malloc(strlen(curString)+1);
@@ -251,21 +285,23 @@ void printlex(TokenNode *list){
         tracker = &(*tracker)->next;
     }
 }
+//todo if file doent end with newline thing read wrong
 TokenNode *Lexer(char *Filename){
     FILE *file;
-    file=fopen("tst.txt","r");
+    file=fopen(Filename,"r");
     char *buffer=NULL;
     if(file){
         fseek(file,0,SEEK_END);
         int len = ftell(file);
         fseek(file,0,SEEK_SET);
         buffer= malloc(len);
-        memset(buffer,'\0',len);
+        memset(buffer,'\0',len-1);
         if(buffer){
             fread(buffer,1,len,file);
         }
         fclose(file);
     }
+    strcat(buffer,"\0");
     TokenNode *list = Lex(buffer);
     printlex(list);
     return list;

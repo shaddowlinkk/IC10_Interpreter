@@ -3,6 +3,6 @@
 #include "Data_structs.h"
 int main() {
     TokenNode *list;
-    Lexer("tst.txt");
+    Lexer("test.txt");
     printf("done");
 }
