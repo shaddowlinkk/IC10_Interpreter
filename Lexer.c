@@ -157,7 +157,13 @@ struct commandToken commandList[]={
         {"r15",TT_REG},
         {"r16",TT_REG},
         {"r17",TT_REG},
-        {"db",TT_DEVICE}
+        {"db",TT_DEVICE},
+        {"d0",TT_DEVICE},
+        {"d1",TT_DEVICE},
+        {"d2",TT_DEVICE},
+        {"d3",TT_DEVICE},
+        {"d4",TT_DEVICE},
+        {"d5",TT_DEVICE}
 };
 
 
@@ -285,7 +291,6 @@ void printlex(TokenNode *list){
         tracker = &(*tracker)->next;
     }
 }
-//todo if file doent end with newline thing read wrong
 TokenNode *Lexer(char *Filename){
     FILE *file;
     file=fopen(Filename,"r");
@@ -294,8 +299,8 @@ TokenNode *Lexer(char *Filename){
         fseek(file,0,SEEK_END);
         int len = ftell(file);
         fseek(file,0,SEEK_SET);
-        buffer= malloc(len);
-        memset(buffer,'\0',len-1);
+        buffer= malloc(len+1);
+        memset(buffer,'\0',len+1);
         if(buffer){
             fread(buffer,1,len,file);
         }
