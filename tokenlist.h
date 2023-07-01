@@ -31,7 +31,6 @@ enum TT_token {
     TT_WAIT,
     TT_LOL,
     TT_MISC
-
 };
 struct commandToken{
     char *str;

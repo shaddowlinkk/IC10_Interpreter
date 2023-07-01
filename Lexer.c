@@ -69,7 +69,7 @@ TokenNode *Lex(char *fileData){
             AddToken(&list, NewToken(new));
             memset(curString,'\0',((sizeof(char))*100));
 
-        }else if((int)*curString>=0x30&&(int)*curString<=0x39||(*curString=='-'&&(int)*(curString-1)>=0x30&&(int)*(curString-1)<=0x39)){
+        }else if((int)*curString>=0x30&&(int)*curString<=0x39||(*curString=='-'&&(int)*(curString+1)>=0x30&&(int)*(curString+1)<=0x39)){
             char *lit= malloc(strlen(curString)+1);
             strncpy(lit,curString, strlen(curString)+1);
             Token *new2 = malloc(sizeof(Token));
@@ -154,8 +154,8 @@ TokenNode *Lexer(char *Filename){
         fseek(file,0,SEEK_END);
         int len = ftell(file);
         fseek(file,0,SEEK_SET);
-        buffer= malloc(len+1);
-        memset(buffer,'\0',len+1);
+        buffer= malloc(len+2);
+        memset(buffer,'\0',len+2);
         if(buffer){
             fread(buffer,1,len,file);
         }
