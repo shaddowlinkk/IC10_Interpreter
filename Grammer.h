@@ -8,66 +8,59 @@
 enum type{
     VAL,
     STRING,
-    UNOP;
-    BINOP;
-    TRIOP;
-    QUADOP;
-    QUINOP;
-    SEXOP;
+    UNOP,
+    BINOP,
+    TRIOP,
+    QUADOP,
+    QUINOP,
+    SEXOP
 };
 union _exprtypes;
 
 struct unop{
-    Token *op;
-    union _exprtypes out;
-    union _exprtypes in1;
+    Token *uop;
+    union _exprtypes *uout;
+    union _exprtypes *uin1;
 };
 struct binop{
-    Token *op;
-    union _exprtypes out;
-    union _exprtypes in1;
-    union _exprtypes in2;
-};
-struct trinop{
-    Token *op;
-    union _exprtypes out;
-    union _exprtypes in1;
-    union _exprtypes in2;
-    union _exprtypes in3;
+    Token *bop;
+    union _exprtypes *bout;
+    union _exprtypes *bin1;
+    union _exprtypes *bin2;
 };
 struct triop{
-    Token *op;
-    union _exprtypes out;
-    union _exprtypes in1;
-    union _exprtypes in2;
-    union _exprtypes in3;
+    Token *top;
+    union _exprtypes *tout;
+    union _exprtypes *tin1;
+    union _exprtypes *tin2;
+    union _exprtypes *tin3;
 };
 struct quadop{
-    Token *op;
-    union _exprtypes out;
-    union _exprtypes in1;
-    union _exprtypes in2;
-    union _exprtypes in3;
-    union _exprtypes in4;
+    Token *qop;
+    union _exprtypes *qout;
+    union _exprtypes *qin1;
+    union _exprtypes *qin2;
+    union _exprtypes *qin3;
+    union _exprtypes *qin4;
 };
 struct quinop{
-    Token *op;
-    union _exprtypes out;
-    union _exprtypes in1;
-    union _exprtypes in2;
-    union _exprtypes in3;
-    union _exprtypes in4;
-    union _exprtypes in5;
+    Token *quop;
+    union _exprtypes *quout;
+    union _exprtypes *quin1;
+    union _exprtypes *quin2;
+    union _exprtypes *quin3;
+    union _exprtypes *quin4;
+    union _exprtypes *quin5;
 };
 struct sexop{
-    Token *op;
-    union _exprtypes out;
-    union _exprtypes in1;
-    union _exprtypes in2;
-    union _exprtypes in3;
-    union _exprtypes in4;
-    union _exprtypes in5;
-    union _exprtypes in6;
+    Token *sop;
+    union _exprtypes *sout;
+    union _exprtypes *sin1;
+    union _exprtypes *sin2;
+    union _exprtypes *sin3;
+    union _exprtypes *sin4;
+    union _exprtypes *sin5;
+    union _exprtypes *sin6;
 };
 
 union _exprtypes{
