@@ -195,7 +195,7 @@ Token *stringlookup(char *curstring){
     return NULL;
 }
 void skipComments(char *data,int *pos){
-    while (data[*pos]!=' '&& data[*pos]!='\n' && data[*pos]!='\0') {
+    while (data[*pos]!='\n' && data[*pos]!='\0') {
         *pos=(*pos)+1;
     }
 }
@@ -243,6 +243,22 @@ TokenNode *Lex(char *fileData){
             strncpy(lit,curString, strlen(curString)+1);
             Token *nl = malloc(sizeof(Token));
             nl->tokenType=TT_HASH;
+            nl->string=lit;
+            AddToken(&list, NewToken(nl));
+            memset(curString,'\0',((sizeof(char))*100));
+        }else if (strncmp(curString,"%",1)==0) {
+            char *lit= malloc(strlen(curString)+1);
+            strncpy(lit,curString, strlen(curString)+1);
+            Token *nl = malloc(sizeof(Token));
+            nl->tokenType=TT_NUM;
+            nl->string=lit;
+            AddToken(&list, NewToken(nl));
+            memset(curString,'\0',((sizeof(char))*100));
+        }else if (strncmp(curString,"$",1)==0) {
+            char *lit= malloc(strlen(curString)+1);
+            strncpy(lit,curString, strlen(curString)+1);
+            Token *nl = malloc(sizeof(Token));
+            nl->tokenType=TT_NUM;
             nl->string=lit;
             AddToken(&list, NewToken(nl));
             memset(curString,'\0',((sizeof(char))*100));
