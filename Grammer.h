@@ -66,12 +66,12 @@ struct sexop{
 union _exprtypes{
     int val;
     char *string;
-    struct unop;
-    struct binop;
-    struct triop;
-    struct quadop;
-    struct quinop;
-    struct sexop;
+    struct unop unop;
+    struct binop binop;
+    struct triop triop;
+    struct quadop quadop;
+    struct quinop quinop;
+    struct sexop sexop;
 };
 typedef struct _expr{
     enum type type;
