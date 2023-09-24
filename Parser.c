@@ -13,11 +13,17 @@ struct parsetree *Parse(TokenNode **tokenlist){
     Statement **parsTracer = &start;
     TokenNode  **listtracer =tokenlist;
     memset(out->lables,-1,512);
+
     out->stmt=start;
     int lineNum=0;
         while ((*listtracer)){
             switch ((*listtracer)->token->tokenType) {
                 case TT_NEWLINE:
+                {
+                    Statement *new_state = malloc(sizeof(Statement));
+                    (*parsTracer)->statement=new_state;
+                    parsTracer=&(*parsTracer)->statement;
+                }
                     break;
                 case TT_DPARA:
                     break;
@@ -71,4 +77,5 @@ struct parsetree *Parse(TokenNode **tokenlist){
                     break;
             }
         }
+        listtracer=&(*listtracer)->next;
 }

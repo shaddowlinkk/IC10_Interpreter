@@ -32,6 +32,7 @@ enum TT_token {
     TT_LOL,
     TT_MISC
 };
+
 struct commandToken{
     char *str;
     enum TT_token tokentype;
