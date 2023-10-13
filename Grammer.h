@@ -76,5 +76,6 @@ typedef struct _expr{
 typedef struct _statement{
     struct _expr *stm_expr;
     struct _statement *statement;
+    struct _statement *back;
 }Statement;
 #endif //IC10_INTERPRETER_GRAMMER_H

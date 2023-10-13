@@ -6,10 +6,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-//todo make statments link forwards and back because fuck relitave branching
 struct parsetree *Parse(TokenNode **tokenlist){
     struct parsetree *out = malloc(sizeof(struct parsetree));
     Statement *start = malloc(sizeof(Statement));
+    start->back=NULL;
     Statement **parsTracer = &start;
     TokenNode  **listtracer =tokenlist;
     memset(out->lables,-1,512);
@@ -19,10 +19,10 @@ struct parsetree *Parse(TokenNode **tokenlist){
         while ((*listtracer)){
             if((*listtracer)->token->tokenType==TT_NEWLINE){
                 if((*parsTracer)->stm_expr) {
-                    //todo make statments link forwards and back because fuck relitave branching
                     Statement *new_state = malloc(sizeof(Statement));
                     new_state->stm_expr = NULL;
                     new_state->statement = NULL;
+                    new_state->back=(*parsTracer);
                     (*parsTracer)->statement = new_state;
                     parsTracer = &(*parsTracer)->statement;
                     listtracer = &(*listtracer)->next;
@@ -151,7 +151,6 @@ struct parsetree *Parse(TokenNode **tokenlist){
                     break;
                 }
                 case LABEL:{
-                    //todo make statments link forwards and back because fuck relitave branching
                     (* parsTracer)->stm_expr= malloc(sizeof(Exper));
                     (* parsTracer)->stm_expr->type=LABEL;
                     /*
@@ -161,6 +160,7 @@ struct parsetree *Parse(TokenNode **tokenlist){
                     (*parsTracer)->statement = new_state;
                     new_state->stm_expr=NULL;
                     new_state->statement=NULL;
+                    new_state->back=(*parsTracer);
                     out->lables[lab]= (int) (*parsTracer)->statement;
                     parsTracer = &(*parsTracer)->statement;
                     listtracer=&(*listtracer)->next;
