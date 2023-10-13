@@ -6,7 +6,8 @@
 #define IC10_INTERPRETER_PARSER_H
 #include "Grammer.h"
 struct parsetree{
-    int lables[512];
+    int lables[512];//<--needs to be a map
     Statement *stmt;
 };
+struct parsetree *Parse(TokenNode **tokenlist);
 #endif //IC10_INTERPRETER_PARSER_H

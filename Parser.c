@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-//t
+//todo make statments link forwards and back because fuck relitave branching
 struct parsetree *Parse(TokenNode **tokenlist){
     struct parsetree *out = malloc(sizeof(struct parsetree));
     Statement *start = malloc(sizeof(Statement));
@@ -15,67 +15,158 @@ struct parsetree *Parse(TokenNode **tokenlist){
     memset(out->lables,-1,512);
 
     out->stmt=start;
-    int lineNum=0;
+    int lab=0;
         while ((*listtracer)){
-            switch ((*listtracer)->token->tokenType) {
-                case TT_NEWLINE:
-                {
-                    Statement *new_state = malloc(sizeof(Statement));
-                    (*parsTracer)->statement=new_state;
-                    parsTracer=&(*parsTracer)->statement;
+            if((*listtracer)->token->tokenType==TT_NEWLINE){
+                //todo make statments link forwards and back because fuck relitave branching
+                Statement *new_state = malloc(sizeof(Statement));
+                (*parsTracer)->statement = new_state;
+                parsTracer = &(*parsTracer)->statement;
+                listtracer=&(*listtracer)->next;
+                continue;
+            }
+            switch ((*listtracer)->token->OP_type) {
+                case CMD:{
+                    struct cmd *new = malloc(sizeof (struct cmd));
+                    new->cop=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+
+                    new->cin1=(*listtracer)->token;
+                    (* parsTracer)->stm_expr= malloc(sizeof(Exper));
+                    (* parsTracer)->stm_expr->type=CMD;
+                    (* parsTracer)->stm_expr->expr= malloc(sizeof(struct cmd));
+                    (* parsTracer)->stm_expr->expr->cmd=new;
+                    break;
                 }
+                case UNOP:{
+                    struct unop *new = malloc(sizeof (struct unop));
+                    new->uop=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->uout=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->uin1=(*listtracer)->token;
+                    (* parsTracer)->stm_expr= malloc(sizeof(Exper));
+                    (* parsTracer)->stm_expr->type=UNOP;
+                    (* parsTracer)->stm_expr->expr= malloc(sizeof(struct unop));
+                    (* parsTracer)->stm_expr->expr->unop=new;
                     break;
-                case TT_DPARA:
+                }
+                case BINOP:{
+                    struct binop *new = malloc(sizeof (struct binop));
+                    new->bop=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->bout=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->bin1=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->bin2=(*listtracer)->token;
+                    (* parsTracer)->stm_expr= malloc(sizeof(Exper));
+                    (* parsTracer)->stm_expr->type=BINOP;
+                    (* parsTracer)->stm_expr->expr= malloc(sizeof(struct binop));
+                    (* parsTracer)->stm_expr->expr->binop=new;
                     break;
-                case TT_HASH:
+                }
+                case TRIOP:{
+                    struct triop *new = malloc(sizeof (struct triop));
+                    new->top=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->tout=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->tin1=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->tin2=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->tin3=(*listtracer)->token;
+                    (* parsTracer)->stm_expr= malloc(sizeof(Exper));
+                    (* parsTracer)->stm_expr->type=TRIOP;
+                    (* parsTracer)->stm_expr->expr= malloc(sizeof(struct triop));
+                    (* parsTracer)->stm_expr->expr->triop=new;
                     break;
-                case TT_BINOP:
+                }
+                case QUADOP:{
+                    struct quadop *new = malloc(sizeof (struct quadop));
+                    new->qop=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->qout=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->qin1=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->qin2=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->qin3=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->qin4=(*listtracer)->token;
+                    (* parsTracer)->stm_expr= malloc(sizeof(Exper));
+                    (* parsTracer)->stm_expr->type=QUADOP;
+                    (* parsTracer)->stm_expr->expr= malloc(sizeof(struct quadop));
+                    (* parsTracer)->stm_expr->expr->quadop=new;
                     break;
-                case TT_SHIFT:
+                }
+                case QUINOP:{
+                    struct quinop *new = malloc(sizeof (struct quinop));
+                    new->quop=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->quout=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->quin1=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->quin2=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->quin3=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->quin4=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->quin5=(*listtracer)->token;
+                    (* parsTracer)->stm_expr= malloc(sizeof(Exper));
+                    (* parsTracer)->stm_expr->type=QUINOP;
+                    (* parsTracer)->stm_expr->expr= malloc(sizeof(struct quinop));
+                    (* parsTracer)->stm_expr->expr->quinop=new;
                     break;
-                case TT_BITOP:
+                }
+                case SEXOP:{
+                    struct sexop *new = malloc(sizeof (struct sexop));
+                    new->sop=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->sout=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->sin1=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->sin2=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->sin3=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->sin4=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->sin5=(*listtracer)->token;
+                    listtracer=&(*listtracer)->next;
+                    new->sin6=(*listtracer)->token;
+                    (* parsTracer)->stm_expr= malloc(sizeof(Exper));
+                    (* parsTracer)->stm_expr->type=SEXOP;
+                    (* parsTracer)->stm_expr->expr= malloc(sizeof(struct sexop));
+                    (* parsTracer)->stm_expr->expr->sexop=new;
                     break;
-                case TT_SELECT:
+                }
+                case LABEL:{
+                    //todo make statments link forwards and back because fuck relitave branching
+                    (* parsTracer)->stm_expr= malloc(sizeof(Exper));
+                    (* parsTracer)->stm_expr->type=LABEL;
+                    /*
+                     * add to a map (* parsTracer)->statment to str
+                     */
+                    Statement *new_state = malloc(sizeof(Statement));
+                    (*parsTracer)->statement = new_state;
+                    out->lables[lab]= (int) (*parsTracer)->statement;
+                    parsTracer = &(*parsTracer)->statement;
+                    listtracer=&(*listtracer)->next;
+                    lab++;
                     break;
-                case TT_MOVE:
+                }
+                case TNULL:
                     break;
-                case TT_JUMP:
-                    break;
-                case TT_DEVICE:
-                    break;
-                case TT_DEVICE_CON:
-                    break;
-                case TT_RJUMP:
-                    break;
-                case TT_NUM:
-                    break;
-                case TT_STRING:
-                    break;
-                case TT_LABEL:
-                    break;
-                case TT_REG:
-                    break;
-                case TT_DEFINE:
-                    break;
-                case TT_ALIAS:
-                    break;
-                case TT_MATH:
-                    break;
-                case TT_SET:
-                    break;
-                case TT_LOAD:
-                    break;
-                case TT_SPARA:
-                    break;
-                case TT_STACK:
-                    break;
-                case TT_WAIT:
-                    break;
-                case TT_LOL:
-                    break;
-                case TT_MISC:
+                default:
                     break;
             }
+            listtracer=&(*listtracer)->next;
         }
-        listtracer=&(*listtracer)->next;
+    return out;
 }

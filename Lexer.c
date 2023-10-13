@@ -28,6 +28,7 @@ Token *stringlookup(char *curstring){
         if(strcmp(curstring,commandList[i].str)==0){
              new->string=commandList[i].str;
              new->tokenType=commandList[i].tokentype;
+             new->OP_type=commandList[i].OP_type;
             return new;
         }
     }
@@ -75,6 +76,7 @@ TokenNode *Lex(char *fileData){
             Token *new2 = malloc(sizeof(Token));
             new2->tokenType=TT_NUM;
             new2->string=lit;
+            new2->OP_type=TNULL;
             AddToken(&list, NewToken(new2));
             memset(curString,'\0',((sizeof(char))*100));
         }else if (strncmp(curString,"HASH",4)==0) {
@@ -83,6 +85,7 @@ TokenNode *Lex(char *fileData){
             Token *nl = malloc(sizeof(Token));
             nl->tokenType=TT_HASH;
             nl->string=lit;
+            nl->OP_type=TNULL;
             AddToken(&list, NewToken(nl));
             memset(curString,'\0',((sizeof(char))*100));
         }else if (strncmp(curString,"%",1)==0) {
@@ -91,6 +94,7 @@ TokenNode *Lex(char *fileData){
             Token *nl = malloc(sizeof(Token));
             nl->tokenType=TT_NUM;
             nl->string=lit;
+            nl->OP_type=TNULL;
             AddToken(&list, NewToken(nl));
             memset(curString,'\0',((sizeof(char))*100));
         }else if (strncmp(curString,"$",1)==0) {
@@ -99,6 +103,7 @@ TokenNode *Lex(char *fileData){
             Token *nl = malloc(sizeof(Token));
             nl->tokenType=TT_NUM;
             nl->string=lit;
+            nl->OP_type=TNULL;
             AddToken(&list, NewToken(nl));
             memset(curString,'\0',((sizeof(char))*100));
         }else if (strncmp((curString+(strlen(curString)-2)),":",1)==0 && strncmp(curString,"d",1)==0) {//< need to add for labels
@@ -107,6 +112,7 @@ TokenNode *Lex(char *fileData){
             Token *nl = malloc(sizeof(Token));
             nl->tokenType=TT_DEVICE_CON;
             nl->string=lit;
+            nl->OP_type=TNULL;
             AddToken(&list, NewToken(nl));
             memset(curString,'\0',((sizeof(char))*100));
         }else if (strncmp((curString+(strlen(curString)-1)),":",1)==0) {//< need to add for labels
@@ -115,6 +121,7 @@ TokenNode *Lex(char *fileData){
             Token *nl = malloc(sizeof(Token));
             nl->tokenType=TT_LABEL;
             nl->string=lit;
+            nl->OP_type=LABEL;
             AddToken(&list, NewToken(nl));
             memset(curString,'\0',((sizeof(char))*100));
         }else{
@@ -123,6 +130,7 @@ TokenNode *Lex(char *fileData){
             Token *nl = malloc(sizeof(Token));
             nl->tokenType=TT_STRING;
             nl->string=lit;
+            nl->OP_type=TNULL;
             AddToken(&list, NewToken(nl));
             memset(curString,'\0',((sizeof(char))*100));
         }
@@ -131,6 +139,7 @@ TokenNode *Lex(char *fileData){
             Token *nl = malloc(sizeof(Token));
             nl->tokenType=TT_NEWLINE;
             nl->string="\\n";
+            nl->OP_type=TNULL;
             AddToken(&list, NewToken(nl));
         }
         pos++;
@@ -140,7 +149,7 @@ TokenNode *Lex(char *fileData){
 void printlex(TokenNode *list){
     TokenNode **tracker = &list;
     while (*tracker){
-        printf("[string:%s,TT:%d]" ,(*tracker)->token->string,(*tracker)->token->tokenType);
+        printf("[string:%s,TT:%d,OP:%d]" ,(*tracker)->token->string,(*tracker)->token->tokenType,(*tracker)->token->OP_type);
         if((*tracker)->token->tokenType==TT_NEWLINE)
             printf("\n");
         tracker = &(*tracker)->next;
