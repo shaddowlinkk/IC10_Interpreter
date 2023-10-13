@@ -18,12 +18,16 @@ struct parsetree *Parse(TokenNode **tokenlist){
     int lab=0;
         while ((*listtracer)){
             if((*listtracer)->token->tokenType==TT_NEWLINE){
-                //todo make statments link forwards and back because fuck relitave branching
-                Statement *new_state = malloc(sizeof(Statement));
-                (*parsTracer)->statement = new_state;
-                parsTracer = &(*parsTracer)->statement;
-                listtracer=&(*listtracer)->next;
-                continue;
+                if((*parsTracer)->stm_expr) {
+                    //todo make statments link forwards and back because fuck relitave branching
+                    Statement *new_state = malloc(sizeof(Statement));
+                    new_state->stm_expr = NULL;
+                    new_state->statement = NULL;
+                    (*parsTracer)->statement = new_state;
+                    parsTracer = &(*parsTracer)->statement;
+                    listtracer = &(*listtracer)->next;
+                    continue;
+                }
             }
             switch ((*listtracer)->token->OP_type) {
                 case CMD:{
@@ -155,6 +159,8 @@ struct parsetree *Parse(TokenNode **tokenlist){
                      */
                     Statement *new_state = malloc(sizeof(Statement));
                     (*parsTracer)->statement = new_state;
+                    new_state->stm_expr=NULL;
+                    new_state->statement=NULL;
                     out->lables[lab]= (int) (*parsTracer)->statement;
                     parsTracer = &(*parsTracer)->statement;
                     listtracer=&(*listtracer)->next;
@@ -163,10 +169,85 @@ struct parsetree *Parse(TokenNode **tokenlist){
                 }
                 case TNULL:
                     break;
-                default:
+                default:{
                     break;
+                }
             }
             listtracer=&(*listtracer)->next;
         }
     return out;
+}
+void printTree(struct parsetree *tree){
+    Statement **tracer = &tree->stmt;
+    int line=0;
+    while (*tracer){
+        line++;
+        if((*tracer)->stm_expr) {
+            switch ((*tracer)->stm_expr->type) {
+                case UNOP:
+                    printf("unop// cmd:%s ,out:%s,in:%s\n",
+                           (*tracer)->stm_expr->expr->unop->uop->string,
+                           (*tracer)->stm_expr->expr->unop->uout->string,
+                           (*tracer)->stm_expr->expr->unop->uin1->string);
+                    break;
+                case BINOP:
+                    printf("binop// cmd:%s ,out:%s,in:%s,in:%s\n",
+                           (*tracer)->stm_expr->expr->binop->bop->string,
+                           (*tracer)->stm_expr->expr->binop->bout->string,
+                           (*tracer)->stm_expr->expr->binop->bin1->string,
+                           (*tracer)->stm_expr->expr->binop->bin2->string);
+                    break;
+                case TRIOP:
+                    printf("triop// cmd:%s ,out:%s,in:%s,in:%s,in:%s\n",
+                           (*tracer)->stm_expr->expr->triop->top->string,
+                           (*tracer)->stm_expr->expr->triop->tout->string,
+                           (*tracer)->stm_expr->expr->triop->tin1->string,
+                           (*tracer)->stm_expr->expr->triop->tin2->string,
+                           (*tracer)->stm_expr->expr->triop->tin3->string);
+                    break;
+                case QUADOP:
+                    printf("quadop// cmd:%s ,out:%s,in:%s,in:%s,in:%s,in:%s\n",
+                           (*tracer)->stm_expr->expr->quinop->quop->string,
+                           (*tracer)->stm_expr->expr->quadop->qout->string,
+                           (*tracer)->stm_expr->expr->quadop->qin1->string,
+                           (*tracer)->stm_expr->expr->quadop->qin2->string,
+                           (*tracer)->stm_expr->expr->quadop->qin3->string,
+                           (*tracer)->stm_expr->expr->quadop->qin4->string);
+                    break;
+                case QUINOP:
+                    printf("quinop// cmd:%s ,out:%s,in:%s,in:%s,in:%s,in:%s,in:%s\n",
+                           (*tracer)->stm_expr->expr->quinop->quop->string,
+                           (*tracer)->stm_expr->expr->quinop->quout->string,
+                           (*tracer)->stm_expr->expr->quinop->quin1->string,
+                           (*tracer)->stm_expr->expr->quinop->quin2->string,
+                           (*tracer)->stm_expr->expr->quinop->quin3->string,
+                           (*tracer)->stm_expr->expr->quinop->quin4->string,
+                           (*tracer)->stm_expr->expr->quinop->quin5->string);
+                    break;
+                case SEXOP:
+                    printf("sexop// cmd:%s ,out:%s,in:%s,in:%s,in:%s,in:%s,in:%s\n",
+                           (*tracer)->stm_expr->expr->sexop->sop->string,
+                           (*tracer)->stm_expr->expr->sexop->sout->string,
+                           (*tracer)->stm_expr->expr->sexop->sin1->string,
+                           (*tracer)->stm_expr->expr->sexop->sin2->string,
+                           (*tracer)->stm_expr->expr->sexop->sin3->string,
+                           (*tracer)->stm_expr->expr->sexop->sin4->string,
+                           (*tracer)->stm_expr->expr->sexop->sin5->string,
+                           (*tracer)->stm_expr->expr->sexop->sin6->string);
+                    break;
+                case CMD:
+                    printf("cmd// cmd:%s ,in:%s\n",
+                           (*tracer)->stm_expr->expr->cmd->cop->string,
+                           (*tracer)->stm_expr->expr->cmd->cin1->string);
+                    break;
+                case LABEL:
+                    printf("label//\n");
+                    break;
+                case TNULL:
+                    printf("this is fucked l:%d\n", line);
+                    break;
+            }
+        }
+        tracer=&(*tracer)->statement;
+    }
 }

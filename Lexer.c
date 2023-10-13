@@ -43,9 +43,12 @@ void skipComments(char *data,int *pos){
 char *GetNextString(char *data,int *pos) {
     char *temp= malloc(100);
     memset(temp,'\0',100);
-    if(data[*pos]=='#')
-        skipComments(data,pos);
+
     while (data[*pos]!=' '&& data[*pos]!='\n' && data[*pos]!='\0') {
+        if(data[*pos]=='#') {
+            skipComments(data, pos);
+            continue;
+        }
         strncat(temp,&data[*pos],1);
         *pos=(*pos)+1;
         if(strcmp(temp,"HASH")==0){
@@ -64,6 +67,8 @@ TokenNode *Lex(char *fileData){
     int pos=0;
     char *curString=NULL;
     while (fileData[pos]!='\0'){
+        if(fileData[pos]=='#')
+            skipComments(fileData,&pos);
         curString=GetNextString(fileData,&pos);
         Token *new = stringlookup(curString);
         if(new!=NULL) {
@@ -125,17 +130,18 @@ TokenNode *Lex(char *fileData){
             AddToken(&list, NewToken(nl));
             memset(curString,'\0',((sizeof(char))*100));
         }else{
-            char *lit= malloc(strlen(curString)+1);
-            strncpy(lit,curString, strlen(curString)+1);
-            Token *nl = malloc(sizeof(Token));
-            nl->tokenType=TT_STRING;
-            nl->string=lit;
-            nl->OP_type=TNULL;
-            AddToken(&list, NewToken(nl));
-            memset(curString,'\0',((sizeof(char))*100));
+            if(strlen(curString)>0) {
+                char *lit = malloc(strlen(curString) + 1);
+                strncpy(lit, curString, strlen(curString) + 1);
+                Token *nl = malloc(sizeof(Token));
+                nl->tokenType = TT_STRING;
+                nl->string = lit;
+                nl->OP_type = TNULL;
+                AddToken(&list, NewToken(nl));
+                memset(curString, '\0', ((sizeof(char)) * 100));
+            }
         }
         if(fileData[pos]=='\n'){
-
             Token *nl = malloc(sizeof(Token));
             nl->tokenType=TT_NEWLINE;
             nl->string="\\n";
@@ -148,12 +154,17 @@ TokenNode *Lex(char *fileData){
 }
 void printlex(TokenNode *list){
     TokenNode **tracker = &list;
+    int line=1;
     while (*tracker){
+
         printf("[string:%s,TT:%d,OP:%d]" ,(*tracker)->token->string,(*tracker)->token->tokenType,(*tracker)->token->OP_type);
-        if((*tracker)->token->tokenType==TT_NEWLINE)
-            printf("\n");
+        if((*tracker)->token->tokenType==TT_NEWLINE) {
+            line++;
+            printf("\nline%d:  ", line);
+        }
         tracker = &(*tracker)->next;
     }
+    printf("\n");
 }
 TokenNode *Lexer(char *Filename){
     FILE *file;

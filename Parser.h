@@ -10,4 +10,5 @@ struct parsetree{
     Statement *stmt;
 };
 struct parsetree *Parse(TokenNode **tokenlist);
+void printTree(struct parsetree *tree);
 #endif //IC10_INTERPRETER_PARSER_H
