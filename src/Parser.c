@@ -2,7 +2,7 @@
 // Created by natha on 6/30/2023.
 //
 
-#include "../Include/Parser.h"
+#include "../include/Parser.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
