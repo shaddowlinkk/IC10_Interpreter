@@ -2,7 +2,7 @@
 // Created by natha on 6/30/2023.
 //
 
-#include "Parser.h"
+#include "../Include/Parser.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -243,7 +243,7 @@ void printTree(struct parsetree *tree){
                            (*tracer)->stm_expr->expr->quinop->quin5->string);
                     break;
                 case SEXOP:
-                    printf("sexop// cmd:%s ,out:%s,in:%s,in:%s,in:%s,in:%s,in:%s\n",
+                    printf("sexop// cmd:%s ,out:%s,in:%s,in:%s,in:%s,in:%s,in:%s,in:%s\n",
                            (*tracer)->stm_expr->expr->sexop->sop->string,
                            (*tracer)->stm_expr->expr->sexop->sout->string,
                            (*tracer)->stm_expr->expr->sexop->sin1->string,

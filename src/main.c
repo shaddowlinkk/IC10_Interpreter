@@ -1,10 +1,10 @@
 #include <stdio.h>
-#include "Lexer.h"
-#include "Parser.h"
-#include "Data_structs.h"
+#include "../Include/Lexer.h"
+#include "../Include/Parser.h"
+#include "../Include/Data_structs.h"
 int main() {
     TokenNode *list;
-    list=Lexer("tst.txt");
+    list=Lexer("test_data/tst.txt");
     struct parsetree *start =Parse(&list);
     printTree(start);
     printf("done");

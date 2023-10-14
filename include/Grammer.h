@@ -58,7 +58,6 @@ struct sexop{
     Token *sin5;
     Token *sin6;
 };
-
 union _exprtypes{
     struct cmd *cmd;
     struct unop *unop;
