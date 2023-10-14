@@ -155,6 +155,7 @@ TokenNode *Lex(char *fileData){
 void printlex(TokenNode *list){
     TokenNode **tracker = &list;
     int line=1;
+    printf("line%d:  ", line);
     while (*tracker){
 
         printf("[string:%s,TT:%d,OP:%d]" ,(*tracker)->token->string,(*tracker)->token->tokenType,(*tracker)->token->OP_type);

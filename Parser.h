@@ -7,6 +7,7 @@
 #include "Grammer.h"
 struct parsetree{
     int lables[512];//<--needs to be a map
+    int lines;
     Statement *stmt;
 };
 struct parsetree *Parse(TokenNode **tokenlist);

@@ -9,19 +9,24 @@
 struct parsetree *Parse(TokenNode **tokenlist){
     struct parsetree *out = malloc(sizeof(struct parsetree));
     Statement *start = malloc(sizeof(Statement));
+    start->stm_expr = NULL;
+    start->statement = NULL;
+    start->line=1;
     start->back=NULL;
     Statement **parsTracer = &start;
     TokenNode  **listtracer =tokenlist;
     memset(out->lables,-1,512);
-
+    out->lines=1;
     out->stmt=start;
     int lab=0;
         while ((*listtracer)){
             if((*listtracer)->token->tokenType==TT_NEWLINE){
+                out->lines++;
                 if((*parsTracer)->stm_expr) {
                     Statement *new_state = malloc(sizeof(Statement));
                     new_state->stm_expr = NULL;
                     new_state->statement = NULL;
+                    new_state->line=-1;
                     new_state->back=(*parsTracer);
                     (*parsTracer)->statement = new_state;
                     parsTracer = &(*parsTracer)->statement;
@@ -29,17 +34,18 @@ struct parsetree *Parse(TokenNode **tokenlist){
                     continue;
                 }
             }
+
             switch ((*listtracer)->token->OP_type) {
                 case CMD:{
                     struct cmd *new = malloc(sizeof (struct cmd));
                     new->cop=(*listtracer)->token;
                     listtracer=&(*listtracer)->next;
-
                     new->cin1=(*listtracer)->token;
                     (* parsTracer)->stm_expr= malloc(sizeof(Exper));
                     (* parsTracer)->stm_expr->type=CMD;
                     (* parsTracer)->stm_expr->expr= malloc(sizeof(struct cmd));
                     (* parsTracer)->stm_expr->expr->cmd=new;
+                    (* parsTracer)->line=out->lines;
                     break;
                 }
                 case UNOP:{
@@ -53,6 +59,7 @@ struct parsetree *Parse(TokenNode **tokenlist){
                     (* parsTracer)->stm_expr->type=UNOP;
                     (* parsTracer)->stm_expr->expr= malloc(sizeof(struct unop));
                     (* parsTracer)->stm_expr->expr->unop=new;
+                    (* parsTracer)->line=out->lines;
                     break;
                 }
                 case BINOP:{
@@ -68,6 +75,7 @@ struct parsetree *Parse(TokenNode **tokenlist){
                     (* parsTracer)->stm_expr->type=BINOP;
                     (* parsTracer)->stm_expr->expr= malloc(sizeof(struct binop));
                     (* parsTracer)->stm_expr->expr->binop=new;
+                    (* parsTracer)->line=out->lines;
                     break;
                 }
                 case TRIOP:{
@@ -85,6 +93,7 @@ struct parsetree *Parse(TokenNode **tokenlist){
                     (* parsTracer)->stm_expr->type=TRIOP;
                     (* parsTracer)->stm_expr->expr= malloc(sizeof(struct triop));
                     (* parsTracer)->stm_expr->expr->triop=new;
+                    (* parsTracer)->line=out->lines;
                     break;
                 }
                 case QUADOP:{
@@ -104,6 +113,7 @@ struct parsetree *Parse(TokenNode **tokenlist){
                     (* parsTracer)->stm_expr->type=QUADOP;
                     (* parsTracer)->stm_expr->expr= malloc(sizeof(struct quadop));
                     (* parsTracer)->stm_expr->expr->quadop=new;
+                    (* parsTracer)->line=out->lines;
                     break;
                 }
                 case QUINOP:{
@@ -125,6 +135,7 @@ struct parsetree *Parse(TokenNode **tokenlist){
                     (* parsTracer)->stm_expr->type=QUINOP;
                     (* parsTracer)->stm_expr->expr= malloc(sizeof(struct quinop));
                     (* parsTracer)->stm_expr->expr->quinop=new;
+                    (* parsTracer)->line=out->lines;
                     break;
                 }
                 case SEXOP:{
@@ -148,6 +159,7 @@ struct parsetree *Parse(TokenNode **tokenlist){
                     (* parsTracer)->stm_expr->type=SEXOP;
                     (* parsTracer)->stm_expr->expr= malloc(sizeof(struct sexop));
                     (* parsTracer)->stm_expr->expr->sexop=new;
+                    (* parsTracer)->line=out->lines;
                     break;
                 }
                 case LABEL:{
@@ -158,6 +170,9 @@ struct parsetree *Parse(TokenNode **tokenlist){
                      */
                     Statement *new_state = malloc(sizeof(Statement));
                     (*parsTracer)->statement = new_state;
+                    (* parsTracer)->line=out->lines;
+                    out->lines++;
+                    new_state->line=0;
                     new_state->stm_expr=NULL;
                     new_state->statement=NULL;
                     new_state->back=(*parsTracer);
@@ -175,14 +190,17 @@ struct parsetree *Parse(TokenNode **tokenlist){
             }
             listtracer=&(*listtracer)->next;
         }
+        out->lines=out->lines;
     return out;
 }
 void printTree(struct parsetree *tree){
     Statement **tracer = &tree->stmt;
     int line=0;
+    printf("number of lines:%d\n",tree->lines);
     while (*tracer){
         line++;
         if((*tracer)->stm_expr) {
+            printf("line:%d ",(*tracer)->line);
             switch ((*tracer)->stm_expr->type) {
                 case UNOP:
                     printf("unop// cmd:%s ,out:%s,in:%s\n",
