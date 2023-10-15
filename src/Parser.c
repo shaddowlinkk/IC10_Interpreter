@@ -15,10 +15,9 @@ struct parsetree *Parse(TokenNode **tokenlist){
     start->back=NULL;
     Statement **parsTracer = &start;
     TokenNode  **listtracer =tokenlist;
-    memset(out->lables,-1,512);
+    memset(out->lables,0,sizeof(out->lables));
     out->lines=1;
     out->stmt=start;
-    int lab=0;
         while ((*listtracer)){
             if((*listtracer)->token->tokenType==TT_NEWLINE){
                 out->lines++;
@@ -165,9 +164,6 @@ struct parsetree *Parse(TokenNode **tokenlist){
                 case LABEL:{
                     (* parsTracer)->stm_expr= malloc(sizeof(Exper));
                     (* parsTracer)->stm_expr->type=LABEL;
-                    /*
-                     * add to a map (* parsTracer)->statment to str
-                     */
                     Statement *new_state = malloc(sizeof(Statement));
                     (*parsTracer)->statement = new_state;
                     (* parsTracer)->line=out->lines;
@@ -176,10 +172,31 @@ struct parsetree *Parse(TokenNode **tokenlist){
                     new_state->stm_expr=NULL;
                     new_state->statement=NULL;
                     new_state->back=(*parsTracer);
-                    out->lables[lab]= (int) (*parsTracer)->statement;
+                    Key new_key;
+                    int len =strlen((*listtracer)->token->string);
+                    new_key.size=len;
+                    new_key.size=(new_key.size<32)?new_key.size: 32;
+                    memset(new_key.key,0,32);
+                    strncpy_s(new_key.key,32,(*listtracer)->token->string,new_key.size);
+                    new_key.next=NULL;
+                    new_key.item=(*parsTracer);
+                    int index= hashcode(new_key)%512;
+                    if(out->lables[index]==NULL){
+                        out->lables[index]=&new_key;
+                    }else{
+                        Key  **trace;
+                        trace=&out->lables[index];
+                        while((*trace)->next){
+                            if((*trace)->next==NULL){
+                                (*trace)->next=&new_key;
+                                break;
+                            } else{
+                                trace=&(*trace)->next;
+                            }
+                        }
+                    }
                     parsTracer = &(*parsTracer)->statement;
                     listtracer=&(*listtracer)->next;
-                    lab++;
                     break;
                 }
                 case TNULL:
@@ -191,6 +208,14 @@ struct parsetree *Parse(TokenNode **tokenlist){
             listtracer=&(*listtracer)->next;
         }
         out->lines=out->lines;
+    Statement **tracer =&out->stmt;
+    Statement table[out->lines];
+    memset(table,0, sizeof(table));
+    while (*tracer){
+        table[(*tracer)->line-1]=(**tracer);
+        tracer=&(*tracer)->statement;
+    }
+    out->line_table=&table;
     return out;
 }
 void printTree(struct parsetree *tree){

@@ -5,9 +5,11 @@
 #ifndef IC10_INTERPRETER_PARSER_H
 #define IC10_INTERPRETER_PARSER_H
 #include "Grammer.h"
+#include "Util.h"
 struct parsetree{
-    int lables[512];//<--needs to be a map
+    Key *lables[512];//<--needs to be a map
     int lines;
+    Statement **line_table;
     Statement *stmt;
 };
 struct parsetree *Parse(TokenNode **tokenlist);
