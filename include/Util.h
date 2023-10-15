@@ -7,7 +7,7 @@
 typedef struct _key{
     int size;
     char key[32];
-     void *item;
+    void *item;
     struct _key *next;
 }Key;
 int hashcode(Key key);
