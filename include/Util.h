@@ -11,5 +11,6 @@ typedef struct _key{
     struct _key *next;
 }Key;
 int hashcode(Key key);
+unsigned int crc32b(unsigned char *message);
 
 #endif //IC10_INTERPRETER_UTIL_H
