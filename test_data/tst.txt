@@ -1,0 +1,90 @@
+top:
+sb 648608238 SettingOutput 1
+sb 648608238 Setting 0
+sb 648608238 Mode 0
+lbn r0 -851746783 HASH("ore_hash") Setting 3
+bne r1 -1 top
+lbn r1 -851746783 HASH("ore_amount") Setting 3
+bne r1 -1 top
+main:
+lbn r0 -851746783 HASH("ore_hash") Setting 3
+blez r0 main
+lbn r1 -851746783 HASH("ore_amount") Setting 3
+blez r1 main
+l r4 db Setting
+blez r1 main
+div r1 r1 50
+ceil r1 r1
+brne r0 1758427767 2 #iron
+move r0 0
+brne r0 -707307845 2#copper
+move r0 1
+brne r0 -1348105509 2 #gold
+move r0 2
+brne r0 -190236170 2#lead
+move r0 3
+brne r0 1830218956 2 #nickel
+move r0 4
+brne r0 1103972403 2 #silicon
+move r0 5
+brne r0 -916518678 2 #silver
+move r0 6
+endswitch:
+sb 648608238 Quantity 0
+mul r0 r0 3
+add r0 r0 1
+jr r0
+lbn r3 648608238 HASH("iron_div") Quantity 3
+bge r3 r1 top
+jr -2
+lbn r3 648608238 HASH("copper_div") Quantity 3
+bge r3 r1 top
+jr -2
+lbn r3 648608238 HASH("gold_div") Quantity 3
+bge r3 r1 top
+jr -2
+lbn r3 648608238 HASH("lead_div") Quantity 3
+bge r3 r1 top
+jr -2
+lbn r3 648608238 HASH("nickel_div") Quantity 3
+bge r3 r1 top
+jr -2
+lbn r3 648608238 HASH("silicon_div") Quantity 3
+bge r3 r1 top
+jr -2
+lbn r3 648608238 HASH("silver_div") Quantity 3
+bge r3 r1 top
+jr -2
+
+divert:
+mul r0 r0 4
+add r0 r0 1
+jr r0
+sbn 648608238 HASH("iron_div") SettingOutput 0
+sbn 648608238 HASH("iron_div") Setting 1
+sbn 648608238 HASH("iron_div") Mode 1
+j ra
+sbn 648608238 HASH("copper_div") SettingOutput 0
+sbn 648608238 HASH("copper_div") Setting 1
+sbn 648608238 HASH("copper_div") Mode 1
+j ra
+sbn 648608238 HASH("gold_div") SettingOutput 0
+sbn 648608238 HASH("gold_div") Setting 1
+sbn 648608238 HASH("gold_div") Mode 1
+j ra
+sbn 648608238 HASH("lead_div") SettingOutput 0
+sbn 648608238 HASH("lead_div") Setting 1
+sbn 648608238 HASH("lead_div") Mode 1
+j ra
+sbn 648608238 HASH("nickel_div") SettingOutput 0
+sbn 648608238 HASH("nickel_div") Setting 1
+sbn 648608238 HASH("nickel_div") Mode 1
+j ra
+sbn 648608238 HASH("silicon_div") SettingOutput 0
+sbn 648608238 HASH("silicon_div") Setting 1
+sbn 648608238 HASH("silicon_div") Mode 1
+j ra
+sbn 648608238 HASH("silver_div") SettingOutput 0
+sbn 648608238 HASH("silver_div") Setting 1
+sbn 648608238 HASH("silver_div") Mode 1
+j ra

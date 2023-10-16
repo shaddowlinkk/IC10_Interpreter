@@ -1,0 +1,14 @@
+[Devices]
+	{
+		[Device settings]
+		name="printer"
+		device hash="464894546"
+		[Device Params]
+		on=1
+		[Slot Params]
+		asdfas=1
+	}
+[Registers]
+r0=0
+[Stack]
+0=1232
