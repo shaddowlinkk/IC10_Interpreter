@@ -7,7 +7,7 @@
 #include "Grammer.h"
 #include "Util.h"
 struct parsetree{
-    Key *lables[512];//<--needs to be a map
+    Key *lables[512];//item type statment
     int lines;
     Statement **line_table;
     Statement *stmt;

@@ -6,9 +6,11 @@
 #define IC10_INTERPRETER_EXECUTOR_H
 #include "../include/Parser.h"
 typedef struct _device{
-    unsigned char *name;
-    double **slotParams;
-    double **deviceParams;
+    char *name;
+    int name_size;
+    Key **deviceSettings; // item type double
+    Key **slotParams;// item type double
+    Key **deviceParams;// item type double
 }Device;
 typedef struct _enviroment{
     Device **devices;

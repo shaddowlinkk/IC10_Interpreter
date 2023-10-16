@@ -3,10 +3,10 @@
 #include "../include/Parser.h"
 #include "../include/readEnviroment.h"
 int main() {
-/*    TokenNode *list;
+    TokenNode *list;
     list=Lexer("test_data/tst.txt");
     struct parsetree *start =Parse(&list);
-    printTree(start);*/
-    readinEniro("test_data/ev_test.ic10e");
+    printTree(start);
+    readinEniro("test_data/sim.ic10e");
     printf("done");
 }

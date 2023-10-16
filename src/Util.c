@@ -3,7 +3,15 @@
 //
 
 #include "../include/Util.h"
-int hashcode(Key key){
+int hashcode(int size,const char *key){
+    int prime=31;
+    int hash=1;
+    for (int i=0;i<size;i++){
+        hash=key[i]*prime+hash;
+    }
+    return hash;
+}
+int keyhashcode(Key key){
     int prime=31;
     int hash=1;
     for (int i=0;i<key.size;i++){

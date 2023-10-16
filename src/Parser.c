@@ -172,23 +172,24 @@ struct parsetree *Parse(TokenNode **tokenlist){
                     new_state->stm_expr=NULL;
                     new_state->statement=NULL;
                     new_state->back=(*parsTracer);
-                    Key new_key;
+                    Key *new_key= malloc(sizeof(Key));
                     int len =strlen((*listtracer)->token->string);
-                    new_key.size=len;
-                    new_key.size=(new_key.size<32)?new_key.size: 32;
-                    memset(new_key.key,0,32);
-                    strncpy_s(new_key.key,32,(*listtracer)->token->string,new_key.size);
-                    new_key.next=NULL;
-                    new_key.item=(*parsTracer);
-                    int index= hashcode(new_key)%512;
+                    new_key->size=len-1;
+                    new_key->size=(new_key->size<32)?new_key->size: 32;
+                    new_key->key= malloc(32);
+                    memset(new_key->key,0,32);
+                    strncpy_s(new_key->key,32,(*listtracer)->token->string,new_key->size);
+                    new_key->next=NULL;
+                    new_key->item=(*parsTracer);
+                    int index= keyhashcode(*new_key) % 512;
                     if(out->lables[index]==NULL){
-                        out->lables[index]=&new_key;
+                        out->lables[index]=new_key;
                     }else{
                         Key  **trace;
                         trace=&out->lables[index];
                         while((*trace)->next){
                             if((*trace)->next==NULL){
-                                (*trace)->next=&new_key;
+                                (*trace)->next=new_key;
                                 break;
                             } else{
                                 trace=&(*trace)->next;

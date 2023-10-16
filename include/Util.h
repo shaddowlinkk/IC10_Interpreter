@@ -6,11 +6,12 @@
 #define IC10_INTERPRETER_UTIL_H
 typedef struct _key{
     int size;
-    char key[32];
+    char *key;
     void *item;
     struct _key *next;
 }Key;
-int hashcode(Key key);
+int keyhashcode(Key key);
+int hashcode(int size,const char *key);
 unsigned int crc32b(unsigned char *message);
 
 #endif //IC10_INTERPRETER_UTIL_H
