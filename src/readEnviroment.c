@@ -3,10 +3,10 @@
 //
 
 #include "../include/readEnviroment.h"
+#include "../include/Util.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "../include/Util.h"
 #define STORAGE_SIZE 512
 
 char *GetNextEniroString(char *data,int *pos) {
@@ -24,7 +24,6 @@ char *GetNextEniroString(char *data,int *pos) {
 }
 void splitqw(char *data,char **out){
     int pos=0;
-    memset(out,0, sizeof(out));
     int index=0;
     char *temp= malloc(50);
     memset(temp,'\0',50);
@@ -51,12 +50,11 @@ void splitqw(char *data,char **out){
     out[index]= malloc(size);
     memset(out[index],0,size);
     strncpy_s(out[index],size,temp,size);
-    //printf("\t\tdata:\n\t\t\tparam_name:%s\n\t\t\tparam_name:%s\n",out[0],out[1]);
 }
 void addToDeviceStorage(char ** data, Key **storage){
 
     double con = strtod(data[1],NULL);
-    Key *newKey= malloc(sizeof(newKey));
+    Key *newKey= malloc(sizeof(Key));
     newKey->size= strlen(data[0]);
     newKey->next=NULL;
     newKey->key= malloc(32);
@@ -79,21 +77,30 @@ void addToDeviceStorage(char ** data, Key **storage){
         }
     }
 }
-Device **getDevices(char *data,int *pos){
-    Device device_list[10];
-    int devices=0;
+
+Device *InitDevice(){
     Device *new_d = malloc(sizeof(Device));
     new_d->deviceParams=NULL;
     new_d->slotParams=NULL;
     new_d->deviceSettings=NULL;
     new_d->name=NULL;
     new_d->name_size=0;
+    return new_d;
+}
+
+Device **getDevices(char *data,int *pos){
+    Device **device_list= malloc(sizeof(Device )*10);
+    memset(device_list,0,sizeof(Device )*10);
+    Device *new_d = InitDevice();
+    int device=0;
     enum device_storage{settings,param,slot_param};
     int currstate=0;
     while (!(data[*pos]=='}' && data[((*pos)+1)]!=',')) {
         if((data[*pos]=='}' && data[((*pos)+1)]==',')) {
             printf("\tnext\n");
-            devices++;
+            device_list[device]=new_d;
+            device++;
+            new_d = InitDevice();
             *pos=(*pos)+2;
         }
         if (data[*pos] != '\t' && data[*pos] != '{' && data[*pos] != '\n') {
@@ -130,7 +137,7 @@ Device **getDevices(char *data,int *pos){
                             }
                             addToDeviceStorage(out, new_d->deviceSettings);
                             int index=(hashcode(strlen(out[0]),out[0])%STORAGE_SIZE);
-                            printf("\t\tname:\n\t\t\tparam_name:%s\n\t\t\tparam_val:%.1lf\n",new_d->deviceSettings[index]->key,(*((double *)new_d->deviceSettings[index]->item)));
+                            printf("\t\tdevice setting:\n\t\t\tparam_name:%s\n\t\t\tparam_val:%.1lf\n",new_d->deviceSettings[index]->key,(*((double *)new_d->deviceSettings[index]->item)));
                             break;
                         }
                         case param: {
@@ -163,28 +170,63 @@ Device **getDevices(char *data,int *pos){
         *pos=(*pos)+1;
     }
     printf("end\n");
+    device_list[device]=new_d;
     *pos=(*pos)+1;
+    return device_list;
 }
 Enviro *proccesFile(char *fileData,int size){
     Enviro *out = malloc(sizeof(Enviro));
+    memset(out->regs,0, sizeof(double )*18);
+    memset(out->stack,0, sizeof(double )*512);
+    out->tree=NULL;
     int pos=0;
+    enum data_type{reg,stack};
+    int type=0;
     while (fileData[pos]!='\0') {
         if (fileData[pos]!='\t') {
             char *temp = GetNextEniroString(fileData, &pos);
             if(temp[0]=='['){
                if(strncmp(temp,"[devices]",9)==0) {
                    printf("control:%s\n", temp);
-                   getDevices(fileData, &pos);
+                   out->devices=getDevices(fileData, &pos);
                }else if(strncmp(temp,"[registers]",11)==0){
+                   type=reg;
                    printf("control:%s\n", temp);
                }else if(strncmp(temp,"[stack]",7)==0){
+                   type=stack;
                    printf("control:%s\n", temp);
                }else{
                    printf("string:%s\n", temp);
                }
             }else{
-                char *out[2];
-                splitqw(temp,out);
+                char *split[2];
+                splitqw(temp,split);
+                switch (type) {
+                    case reg:{
+                        if(split[0][1]>='0' &&split[0][1]<='9') {
+                            split[0]++;
+                            char *idx= malloc(sizeof (char*));
+                            strcpy(idx,split[0]);
+                            out->regs[strtol(idx,NULL,0)] = strtod(split[1],NULL);
+                            printf("\t reg:%d\n\t\tval:%.1lf\n",(int)strtol(idx,NULL,0),out->regs[strtol(idx,NULL,0)]);
+                            free(idx);
+                        }
+
+                        break;
+                    }
+                    case stack:{
+                        if(split[0][0]>='0' &&split[0][0]<='9') {
+                            char *idxs= malloc(sizeof (char*));
+                            strcpy(idxs, split[0]);
+                            out->stack[strtol(idxs,NULL,0)] = strtod(split[1], NULL);
+                            printf("\t stack:%ld\n\t\tval:%.1lf\n", strtol(idxs,NULL,0),out->stack[strtol(idxs,NULL,0)]);
+                            free(idxs);
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
             }
         }
         pos++;
