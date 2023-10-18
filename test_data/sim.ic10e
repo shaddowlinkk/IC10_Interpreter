@@ -9,6 +9,6 @@
 		asdfas=1
 	}
 [Registers]
-r0=0
+r0=23
 [Stack]
 0=1232

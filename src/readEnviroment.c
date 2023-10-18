@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #define STORAGE_SIZE 512
-
+//todo make sure that no  bad data can come into the system from reading ic10e files
 char *GetNextEniroString(char *data,int *pos) {
     char *temp= malloc(100);
     memset(temp,'\0',100);
