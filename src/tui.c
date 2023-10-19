@@ -34,13 +34,17 @@ int test(){
     DWORD dwMode = 0;
     GetConsoleMode(hOut, &dwMode);
     dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    dwMode |=DISABLE_NEWLINE_AUTO_RETURN;
     SetConsoleMode(hOut, dwMode);
     printf("\x1b[2 q");
     printf("\x1B[34mtest\r\n");
     wprintf(L"\x1B[32mtest\x1B[39m\r\n");
+    CONSOLE_SCREEN_BUFFER_INFO info;
     KEY_EVENT_RECORD key;
     while(1){
 
+        GetConsoleScreenBufferInfo(hOut, &info);
+        printf("\x1b[s\x1b[30;111H\x1b[31mX:%hi,Y:%hi\x1b[u",info.dwCursorPosition.X,info.dwCursorPosition.Y);
         getconchar( &key);
         switch (key.wVirtualKeyCode) {
             case VK_UP:{
@@ -60,11 +64,16 @@ int test(){
                 break;
             }
             case VK_F1:{
-                wprintf(L"\x1B[30;47mhello");
+                GetConsoleScreenBufferInfo(hOut, &info);
+                printf("\x1b[36mX:%hi,Y:%hi",info.dwCursorPosition.X,info.dwCursorPosition.Y);
+                break;
+            }
+            case VK_F2:{
+                wprintf(L"\x1B[2J\x1B[3J");//<<<clears the screen
                 break;
             }
             case VK_RETURN:{
-                wprintf(L"\x1b[30mhello");
+                wprintf(L"\x1b[32mhello");
                 break;
             }
         }
