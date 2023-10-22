@@ -9,7 +9,7 @@
 struct parsetree{
     Key *lables[512];//item type statment
     int lines;
-    Statement **line_table;
+    Statement *line_table;
     Statement *stmt;
 };
 struct parsetree *Parse(TokenNode **tokenlist);

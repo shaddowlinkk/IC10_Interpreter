@@ -162,8 +162,13 @@ struct parsetree *Parse(TokenNode **tokenlist){
                     break;
                 }
                 case LABEL:{
+                    struct cmd *new = malloc(sizeof (struct cmd));
+                    new->cop=(*listtracer)->token;
+                    new->cin1=NULL;
                     (* parsTracer)->stm_expr= malloc(sizeof(Exper));
                     (* parsTracer)->stm_expr->type=LABEL;
+                    (* parsTracer)->stm_expr->expr= malloc(sizeof(struct cmd));
+                    (* parsTracer)->stm_expr->expr->cmd=new;
                     Statement *new_state = malloc(sizeof(Statement));
                     (*parsTracer)->statement = new_state;
                     (* parsTracer)->line=out->lines;
@@ -210,13 +215,13 @@ struct parsetree *Parse(TokenNode **tokenlist){
         }
         out->lines=out->lines;
     Statement **tracer =&out->stmt;
-    Statement table[out->lines];
-    memset(table,0, sizeof(table));
+    out->line_table= malloc(sizeof(Statement)* out->lines);
+    memset(out->line_table,0, (sizeof(Statement)* out->lines));
     while (*tracer){
-        table[(*tracer)->line-1]=(**tracer);
+        out->line_table[(*tracer)->line-1]=(**tracer);
         tracer=&(*tracer)->statement;
     }
-    out->line_table=&table;
+
     return out;
 }
 void printTree(struct parsetree *tree){
