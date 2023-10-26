@@ -1,2 +1,6 @@
 # Project exclude paths
-/cmake-build-debug/
+/cmake-build-debug/.cmake
+/cmake-build-debug/CMakeFiles
+/cmake-build-debug/Testing
+/cmake-build-debug/cmake_install.cmake
+/cmake-build-debug/IC10_Interpreter.cbp
