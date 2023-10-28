@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #define STORAGE_SIZE 512
+#define DEFAULT_DEVICES 10
 //todo make sure that no  bad data can come into the system from reading ic10e files
 char *GetNextEniroString(char *data,int *pos) {
     char *temp= malloc(100);
@@ -88,9 +89,9 @@ Device *InitDevice(){
     return new_d;
 }
 
-Device **getDevices(char *data,int *pos){
-    Device **device_list= malloc(sizeof(Device )*10);
-    memset(device_list,0,sizeof(Device )*10);
+Device **getDevices(char *data,int *pos,int devs){
+    Device **device_list= malloc(sizeof(Device )*devs);
+    memset(device_list,0,sizeof(Device )*devs);
     Device *new_d = InitDevice();
     int device=0;
     enum device_storage{settings,param,slot_param};
@@ -179,8 +180,9 @@ Enviro *proccesFile(char *fileData,int size){
     memset(out->regs,0, sizeof(double )*18);
     memset(out->stack,0, sizeof(double )*512);
     out->tree=NULL;
+    out->numdevs=-1;
     int pos=0;
-    enum data_type{reg,stack};
+    enum data_type{reg,stack,info};
     int type=0;
     while (fileData[pos]!='\0') {
         if (fileData[pos]!='\t') {
@@ -188,12 +190,16 @@ Enviro *proccesFile(char *fileData,int size){
             if(temp[0]=='['){
                if(strncmp(temp,"[devices]",9)==0) {
                    printf("control:%s\n", temp);
-                   out->devices=getDevices(fileData, &pos);
+                   int num =(out->numdevs>-1)? out->numdevs:DEFAULT_DEVICES;
+                   out->devices=getDevices(fileData, &pos,num);
                }else if(strncmp(temp,"[registers]",11)==0){
                    type=reg;
                    printf("control:%s\n", temp);
                }else if(strncmp(temp,"[stack]",7)==0){
                    type=stack;
+                   printf("control:%s\n", temp);
+               }else if(strncmp(temp,"[envinfo]",7)==0){
+                   type=info;
                    printf("control:%s\n", temp);
                }else{
                    printf("string:%s\n", temp);
@@ -221,6 +227,12 @@ Enviro *proccesFile(char *fileData,int size){
                             out->stack[strtol(idxs,NULL,0)] = strtod(split[1], NULL);
                             printf("\t stack:%ld\n\t\tval:%.1lf\n", strtol(idxs,NULL,0),out->stack[strtol(idxs,NULL,0)]);
                             free(idxs);
+                        }
+                        break;
+                    }
+                    case info:{
+                        if(strcmp(split[0],"devicenum")==0){
+                            out->numdevs= strtol(split[1],NULL,0);
                         }
                         break;
                     }

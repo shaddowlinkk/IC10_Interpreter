@@ -184,6 +184,6 @@ TokenNode *Lexer(char *Filename){
     }
     strcat(buffer,"\0");
     TokenNode *list = Lex(buffer);
-    //printlex(list);
+    free(buffer);
     return list;
 }

@@ -101,7 +101,8 @@ char *getStringfromTree(Statement *data){
     strcpy(temp,out);
     return temp;
 }
-void updateDebug(int curline,struct parsetree *data){//todo find bug that if you are iterating to fast crashes
+void updateDebug(int curline,struct parsetree *in){
+    struct parsetree *data =in;
     printf("\x1b[?25l");
     printf("\x1b[s\x1b[1;1H\x1b(0l\x1b(B");
     for (int i = 1; i < 5; i++)printf("\x1b(0q\x1b(B");
@@ -123,17 +124,13 @@ void updateDebug(int curline,struct parsetree *data){//todo find bug that if you
                "%s"
                "\x1b[0m"//code
                "\x1b(0\x1b[120Gx\x1b(B\x1b[1E",line+j-1,hl,code);
-        if(strcmp(code,"")!=0) {
-            free(code);
-        }
     }
-
     printf("\x1b(0t\x1b(B");
 
     for (int i = 1; i < 5; i++)printf("\x1b(0q\x1b(B");
     printf("\x1b(0v\x1b(B\x1b");
     for (int i = 6; i < 119; i++)printf("\x1b(0q\x1b(B");
-    printf("\x1b(0u\x1b(B");
+    printf("\x1b(0u\x1b(B\x1b[1E");
 
     for (int j=35;j<51;j++) {//stack ans register area
         printf("\x1b(0x\x1b[120Gx\x1b(B\x1b[1E");
@@ -151,7 +148,7 @@ int test(){
     GetConsoleMode(hOut, &dwMode);
     dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
     dwMode |= DISABLE_NEWLINE_AUTO_RETURN;
-    COORD size;
+    COORD size,old;
     SMALL_RECT box;
     box.Bottom=49;
     box.Right=119;
@@ -159,19 +156,21 @@ int test(){
     box.Left=0;
     size.X=120;
     size.Y=50;
+    CONSOLE_SCREEN_BUFFER_INFO info;
+    GetConsoleScreenBufferInfo(hOut, &info);
     SetConsoleScreenBufferSize(hOut,size);
     SetConsoleWindowInfo(hOut,1,&box);
     SetConsoleMode(hOut, dwMode);
     printf("\x1b[2 q");
-    CONSOLE_SCREEN_BUFFER_INFO info;
-    GetConsoleScreenBufferInfo(hOut, &info);
+    old=info.dwSize;
     KEY_EVENT_RECORD key;
     int line=0;
     TokenNode *list;
     list=Lexer("../test_data/tst.txt");
     struct parsetree *start =Parse(&list);
     updateDebug(line,start);
-    while(1){
+    int stop=1;
+    while(stop){
         SetConsoleWindowInfo(hOut,1,&box);
         GetConsoleScreenBufferInfo(hOut, &info);
         printf("\x1b[s\x1b[49;108H\x1b[31mX:%hi,Y:%hi\x1b[u\x1b[0m",info.dwCursorPosition.X+1,info.dwCursorPosition.Y+1);
@@ -207,10 +206,20 @@ int test(){
                 updateDebug(line,start);
                 break;
             }
+            case VK_ESCAPE:{
+                stop=0;
+                break;
+            }
             case VK_RETURN:{
                 wprintf(L"\x1b[32mhello\x1b[0m");
                 break;
             }
         }
     }
+    SetConsoleScreenBufferSize(hOut,old);
+    wprintf(L"\x1B[2J\x1B[3J");
+    printf("printing tree\n");
+    printTree(start);
+    printf("\n\nprinting lex\n");
+    printlex(list);
 }

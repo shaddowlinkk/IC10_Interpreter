@@ -16,4 +16,5 @@ typedef struct _node{
     struct _node *next;
 }TokenNode;
 TokenNode *Lexer(char *Filename);
+void printlex(TokenNode *list);
 #endif //IC10_INTERPRETER_LEXER_H

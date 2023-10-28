@@ -14,6 +14,7 @@ typedef struct _device{
 }Device;
 typedef struct _enviroment{
     Device **devices;
+    int numdevs;
     double regs[18];
     double stack[512];
     struct parsetree *tree;
