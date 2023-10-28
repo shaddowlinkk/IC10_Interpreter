@@ -5,6 +5,12 @@
 #ifndef IC10_INTERPRETER_EXECUTOR_H
 #define IC10_INTERPRETER_EXECUTOR_H
 #include "../include/Parser.h"
+struct slotdata{
+
+};
+struct slotnode{
+    int slotNum;
+};
 typedef struct _device{
     char *name;
     int name_size;
