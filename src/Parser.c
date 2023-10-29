@@ -6,8 +6,35 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-struct parsetree *Parse(TokenNode **tokenlist){
-    struct parsetree *out = malloc(sizeof(struct parsetree));
+
+void addRedefine(struct parsedata *out,char *key,char *data){
+    Key *new_key= malloc(sizeof(Key));
+    int len =(int)strlen(key);
+    new_key->size=len;
+    new_key->size=(new_key->size<32)?new_key->size: 32;
+    new_key->key= malloc(32);
+    memset(new_key->key,0,32);
+    strncpy_s(new_key->key,32,key,new_key->size);
+    new_key->next=NULL;
+    new_key->item=data;
+    int index= keyhashcode(*new_key) % 128;
+    if(out->redef[index]==NULL){
+        out->redef[index]=new_key;
+    }else{
+        Key  **trace;
+        trace=&out->redef[index];
+        while((*trace)->next){
+            if((*trace)->next==NULL){
+                (*trace)->next=new_key;
+                break;
+            } else{
+                trace=&(*trace)->next;
+            }
+        }
+    }
+}
+struct parsedata *Parse(TokenNode **tokenlist){
+    struct parsedata *out = malloc(sizeof(struct parsedata));
     Statement *start = malloc(sizeof(Statement));
     start->stm_expr = NULL;
     start->statement = NULL;
@@ -16,6 +43,7 @@ struct parsetree *Parse(TokenNode **tokenlist){
     Statement **parsTracer = &start;
     TokenNode  **listtracer =tokenlist;
     memset(out->lables,0,sizeof(out->lables));
+    memset(out->redef,0,sizeof(out->redef));
     out->lines=1;
     out->stmt=start;
         while ((*listtracer)){
@@ -59,6 +87,11 @@ struct parsetree *Parse(TokenNode **tokenlist){
                     (* parsTracer)->stm_expr->expr= malloc(sizeof(struct unop));
                     (* parsTracer)->stm_expr->expr->unop=new;
                     (* parsTracer)->line=out->lines;
+                    if(new->uop->tokenType==TT_DEFINE || new->uop->tokenType==TT_ALIAS) {
+                        if(new->uin1->tokenType!=TT_REG && new->uin1->tokenType!=TT_DEVICE)
+                            break;
+                        addRedefine(out, new->uout->string, new->uin1->string);
+                    }
                     break;
                 }
                 case BINOP:{
@@ -224,7 +257,7 @@ struct parsetree *Parse(TokenNode **tokenlist){
 
     return out;
 }
-void printTree(struct parsetree *tree){
+void printTree(struct parsedata *tree){
     Statement **tracer = &tree->stmt;
     int line=0;
     printf("number of lines:%d\n",tree->lines);

@@ -4,5 +4,5 @@
 
 #ifndef IC10_INTERPRETER_TUI_H
 #define IC10_INTERPRETER_TUI_H
-int test();
+int debug();
 #endif //IC10_INTERPRETER_TUI_H

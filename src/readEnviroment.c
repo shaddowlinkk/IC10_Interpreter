@@ -249,7 +249,6 @@ Enviro *proccesFile(char *fileData,int size){
     Enviro *out = malloc(sizeof(Enviro));
     memset(out->regs,0, sizeof(double )*18);
     memset(out->stack,0, sizeof(double )*512);
-    out->tree=NULL;
     out->numdevs=-1;
     int pos=0;
     enum data_type{reg,stack,info};

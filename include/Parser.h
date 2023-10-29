@@ -6,12 +6,13 @@
 #define IC10_INTERPRETER_PARSER_H
 #include "Grammer.h"
 #include "Util.h"
-struct parsetree{
+struct parsedata{
     Key *lables[512];//item type statment
+    Key *redef[128];
     int lines;
     Statement *line_table;
     Statement *stmt;
 };
-struct parsetree *Parse(TokenNode **tokenlist);
-void printTree(struct parsetree *tree);
+struct parsedata *Parse(TokenNode **tokenlist);
+void printTree(struct parsedata *tree);
 #endif //IC10_INTERPRETER_PARSER_H

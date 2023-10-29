@@ -101,8 +101,8 @@ char *getStringfromTree(Statement *data){
     strcpy(temp,out);
     return temp;
 }
-void updateDebug(int curline,struct parsetree *in){
-    struct parsetree *data =in;
+void updateDebug(int curline,struct parsedata *in){
+    struct parsedata *data =in;
     printf("\x1b[?25l");
     printf("\x1b[s\x1b[1;1H\x1b(0l\x1b(B");
     for (int i = 1; i < 5; i++)printf("\x1b(0q\x1b(B");
@@ -141,7 +141,7 @@ void updateDebug(int curline,struct parsetree *in){
     printf("\x1b(0j\x1b(B\x1b[u");
     printf("\x1b[?25h");
 }
-int test(){
+int debug(){
     // Set output mode to handle virtual terminal sequences
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD dwMode = 0;
@@ -167,7 +167,7 @@ int test(){
     int line=0;
     TokenNode *list;
     list=Lexer("../test_data/tst.txt");
-    struct parsetree *start =Parse(&list);
+    struct parsedata *start =Parse(&list);
     updateDebug(line,start);
     int stop=1;
     while(stop){

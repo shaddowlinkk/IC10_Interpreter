@@ -25,12 +25,10 @@ typedef struct _device{
     struct slotnode *slotParams;// item type double
     Key **deviceParams;// item type double
 }Device;
-typedef struct _enviroment{
+typedef struct _environment{
     Device **devices;
     int numdevs;
     double regs[18];
     double stack[512];
-    struct parsetree *tree;
 }Enviro;
-void run(Enviro enviro);
 #endif //IC10_INTERPRETER_EXECUTOR_H
