@@ -9,6 +9,7 @@
 typedef struct _token{
     enum type OP_type;
     enum TT_token tokenType;
+    enum Commands command;
     char *string;
 }Token;
 typedef struct _node{

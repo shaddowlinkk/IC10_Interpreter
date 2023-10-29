@@ -29,6 +29,7 @@ Token *stringlookup(char *curstring){
              new->string=commandList[i].str;
              new->tokenType=commandList[i].tokentype;
              new->OP_type=commandList[i].OP_type;
+             new->command=commandList[i].command;
             return new;
         }
     }
@@ -82,6 +83,7 @@ TokenNode *Lex(char *fileData){
             new2->tokenType=TT_NUM;
             new2->string=lit;
             new2->OP_type=TNULL;
+            new2->command=CNULL;
             AddToken(&list, NewToken(new2));
             memset(curString,'\0',((sizeof(char))*100));
         }else if (strncmp(curString,"HASH",4)==0) {
@@ -91,6 +93,7 @@ TokenNode *Lex(char *fileData){
             nl->tokenType=TT_HASH;
             nl->string=lit;
             nl->OP_type=TNULL;
+            nl->command=CNULL;
             AddToken(&list, NewToken(nl));
             memset(curString,'\0',((sizeof(char))*100));
         }else if (strncmp(curString,"%",1)==0) {
@@ -100,6 +103,7 @@ TokenNode *Lex(char *fileData){
             nl->tokenType=TT_NUM;
             nl->string=lit;
             nl->OP_type=TNULL;
+            nl->command=CNULL;
             AddToken(&list, NewToken(nl));
             memset(curString,'\0',((sizeof(char))*100));
         }else if (strncmp(curString,"$",1)==0) {
@@ -109,6 +113,7 @@ TokenNode *Lex(char *fileData){
             nl->tokenType=TT_NUM;
             nl->string=lit;
             nl->OP_type=TNULL;
+            nl->command=CNULL;
             AddToken(&list, NewToken(nl));
             memset(curString,'\0',((sizeof(char))*100));
         }else if (strncmp((curString+(strlen(curString)-2)),":",1)==0 && strncmp(curString,"d",1)==0) {//< need to add for labels
@@ -127,6 +132,7 @@ TokenNode *Lex(char *fileData){
             nl->tokenType=TT_LABEL;
             nl->string=lit;
             nl->OP_type=LABEL;
+            nl->command=CNULL;
             AddToken(&list, NewToken(nl));
             memset(curString,'\0',((sizeof(char))*100));
         }else{
@@ -137,6 +143,7 @@ TokenNode *Lex(char *fileData){
                 nl->tokenType = TT_STRING;
                 nl->string = lit;
                 nl->OP_type = TNULL;
+                nl->command=CNULL;
                 AddToken(&list, NewToken(nl));
                 memset(curString, '\0', ((sizeof(char)) * 100));
             }
@@ -146,6 +153,7 @@ TokenNode *Lex(char *fileData){
             nl->tokenType=TT_NEWLINE;
             nl->string="\\n";
             nl->OP_type=TNULL;
+            nl->command=CNULL;
             AddToken(&list, NewToken(nl));
         }
         pos++;

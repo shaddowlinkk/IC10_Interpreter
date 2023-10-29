@@ -211,7 +211,7 @@ struct parsedata *Parse(TokenNode **tokenlist){
                     new_state->statement=NULL;
                     new_state->back=(*parsTracer);
                     Key *new_key= malloc(sizeof(Key));
-                    int len =strlen((*listtracer)->token->string);
+                    int len =(int)strlen((*listtracer)->token->string);
                     new_key->size=len-1;
                     new_key->size=(new_key->size<32)?new_key->size: 32;
                     new_key->key= malloc(32);
