@@ -6,16 +6,23 @@
 #define IC10_INTERPRETER_EXECUTOR_H
 #include "../include/Parser.h"
 struct slotdata{
-
+    char *name;
+    int datasize;
+    char *data;
+    struct slotdata *next;
 };
 struct slotnode{
     int slotNum;
+    struct slotdata *start;
+    struct slotnode *next;
 };
 typedef struct _device{
     char *name;
     int name_size;
+    int device_num;
+    int num_slots;
     Key **deviceSettings; // item type double
-    Key **slotParams;// item type double
+    struct slotnode *slotParams;// item type double
     Key **deviceParams;// item type double
 }Device;
 typedef struct _enviroment{

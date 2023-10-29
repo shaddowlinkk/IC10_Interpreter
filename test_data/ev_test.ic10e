@@ -1,12 +1,20 @@
 [Devices]
 	{
 		[Device settings]
+		deviceNum=30
 		name="printer"
 		device hash="40"
 		[Device Params]
 		on=0
 		[Slot Params]
-		asdfas=1
+		{
+		    slotNUM=23
+		    test=0
+		    hash=1231231231
+		},
+		{
+		    test=1
+		}
 	},
 	{
 		[Device settings]
@@ -15,7 +23,7 @@
 		[Device Params]
 		on=1
 		[Slot Params]
-		asdfas=2
+		{}
 	}
 [Registers]
 r10=23

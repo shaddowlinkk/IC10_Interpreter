@@ -31,7 +31,7 @@ void splitqw(char *data,char **out){
     strcat(data,"\0");
     int size=0;
     while (data[pos]!='\0'){
-        if (data[pos] != '\t' && data[pos] != '{'&& data[pos] != '"') {
+        if (data[pos] != '\t' && data[pos] != ' ' && data[pos] != '"') {
             if (data[pos] == '=') {
                 size++;
                 out[index] = malloc(size);
@@ -78,7 +78,69 @@ void addToDeviceStorage(char ** data, Key **storage){
         }
     }
 }
+struct slotnode *newSlotNode(){
+    struct slotnode *new = malloc(sizeof(struct slotnode));
+    new->next=NULL;
+    new->start=NULL;
+    new->slotNum=-1;
+    return new;
+}
+struct slotdata *newSlotData(){
+    struct slotdata *new = malloc(sizeof(struct slotdata));
+    new->next=NULL;
+    new->data=NULL;
+    new->name=NULL;
+    new->datasize=-1;
+    return new;
+}
+void addSlotNode(struct slotnode **start, struct slotnode *new){
+    struct slotnode **tracer=start;
+    while ((*tracer)){
+        tracer =&(*tracer)->next;
+    }
+    new->next=(*tracer);
+    *tracer=new;
+}
+void addSlotData(struct slotdata **start, struct slotdata *new){
+    struct slotdata **tracer=start;
+    while ((*tracer)){
+        tracer =&(*tracer)->next;
+    }
+    new->next=(*tracer);
+    *tracer=new;
+}
+int setSlotParams(struct slotnode **start, char *data ,int *pos){
 
+    struct slotnode *new_n=newSlotNode();
+    int slots=0;
+    while (!(data[*pos]=='}' && data[((*pos)+1)]!=',')) {
+        if((data[*pos]=='}' && data[((*pos)+1)]==',')) {
+            new_n->slotNum=(new_n->slotNum>-1)?new_n->slotNum:slots;
+            addSlotNode(start,new_n);
+            new_n=newSlotNode();
+            slots++;
+            *pos=(*pos)+2;
+        }
+        if (data[*pos] != '\t' && data[*pos] != ' ' && data[*pos] != '{' && data[*pos] != '\n') {
+            char *temp = GetNextEniroString(data, pos);
+            char *split_data[2];
+            splitqw(temp,split_data);
+            if(strcmp(split_data[0],"slotnum")==0){
+                new_n->slotNum= strtol(split_data[1],NULL,0);
+            }else {
+                struct slotdata *new_d = newSlotData();
+                new_d->datasize = (int)strlen(split_data[1]);
+                new_d->name = split_data[0];
+                new_d->data = split_data[1];
+                addSlotData(&new_n->start, new_d);
+            }
+        }
+        *pos=(*pos)+1;
+    }
+    new_n->slotNum=(new_n->slotNum>-1)?new_n->slotNum:slots;
+    addSlotNode(start,new_n);
+    return slots+1;
+}
 Device *InitDevice(){
     Device *new_d = malloc(sizeof(Device));
     new_d->deviceParams=NULL;
@@ -86,6 +148,8 @@ Device *InitDevice(){
     new_d->deviceSettings=NULL;
     new_d->name=NULL;
     new_d->name_size=0;
+    new_d->num_slots=0;
+    new_d->device_num=-1;
     return new_d;
 }
 
@@ -94,17 +158,18 @@ Device **getDevices(char *data,int *pos,int devs){
     memset(device_list,0,sizeof(Device )*devs);
     Device *new_d = InitDevice();
     int device=0;
-    enum device_storage{settings,param,slot_param};
+    enum device_storage{settings,param};
     int currstate=0;
     while (!(data[*pos]=='}' && data[((*pos)+1)]!=',')) {
         if((data[*pos]=='}' && data[((*pos)+1)]==',')) {
             printf("\tnext\n");
             device_list[device]=new_d;
+            new_d->device_num=((new_d->device_num)>-1)? new_d->device_num:device;
             device++;
             new_d = InitDevice();
             *pos=(*pos)+2;
         }
-        if (data[*pos] != '\t' && data[*pos] != '{' && data[*pos] != '\n') {
+        if (data[*pos] != '\t' && data[*pos] != ' ' && data[*pos] != '{' && data[*pos] != '\n') {
             char *temp = GetNextEniroString(data, pos);
             if(temp[0]=='[') {
                 printf("\tdevice control:%s\n", temp);
@@ -115,30 +180,44 @@ Device **getDevices(char *data,int *pos,int devs){
                     currstate=param;
                 }
                 if(strncmp(temp,"[slot params]",13)==0){
-                    currstate=slot_param;
+                    new_d->num_slots=setSlotParams(&new_d->slotParams, data, pos);
+                    struct slotnode **tr=&new_d->slotParams;
+                    while ((*tr)){
+                        printf("\t\tslot:%d\n",(*tr)->slotNum);
+                        struct slotdata **trd =&(*tr)->start;
+                        while ((*trd)){
+                            printf("\t\t\tname:%s\n\t\t\t\tdata:%s\n",(*trd)->name,(*trd)->data);
+                            trd=&(*trd)->next;
+                        }
+                        tr=&(*tr)->next;
+                    }
                 }else {
                 }
             }else{
-                char *out[2];
-                splitqw(temp,out);
-                if(strncmp(out[0],"name",4)==0){
-                    int size = strlen(out[1]);
+                char *split_data[2];
+                splitqw(temp,split_data);
+                if(strncmp(split_data[0],"name",4)==0){
+                    int size = strlen(split_data[1]);
                     new_d->name_size=size;
                     size++;
                     new_d->name= malloc(size);
                     memset(new_d->name,0,size);
-                    strncpy_s(new_d->name,size,out[1],size-1);
-                    printf("\t\tname:\n\t\t\tparam_name:%s\n\t\t\tparam_val:%s\n",out[0],out[1]);
+                    strncpy_s(new_d->name,size,split_data[1],size-1);
+                    printf("\t\tname:\n\t\t\tparam_name:%s\n\t\t\tparam_val:%s\n",split_data[0],split_data[1]);
                 }else {
                     switch (currstate) {
                         case settings: {
-                            if(new_d->deviceSettings==NULL){
-                                new_d->deviceSettings=malloc(sizeof(Key)*STORAGE_SIZE);
-                                memset(new_d->deviceSettings,0,sizeof (Key)*STORAGE_SIZE);
+                            if (new_d->deviceSettings == NULL) {
+                                new_d->deviceSettings = malloc(sizeof(Key) * STORAGE_SIZE);
+                                memset(new_d->deviceSettings, 0, sizeof(Key) * STORAGE_SIZE);
                             }
-                            addToDeviceStorage(out, new_d->deviceSettings);
-                            int index=(hashcode(strlen(out[0]),out[0])%STORAGE_SIZE);
-                            printf("\t\tdevice setting:\n\t\t\tparam_name:%s\n\t\t\tparam_val:%.1lf\n",new_d->deviceSettings[index]->key,(*((double *)new_d->deviceSettings[index]->item)));
+                            if (strcmp(split_data[0], "devicenum") == 0) {
+                                new_d->device_num = strtol(split_data[1],NULL,0);
+                            } else{
+                                addToDeviceStorage(split_data, new_d->deviceSettings);
+                                int index = (hashcode(strlen(split_data[0]), split_data[0]) % STORAGE_SIZE);
+                                printf("\t\tdevice setting:\n\t\t\tparam_name:%s\n\t\t\tparam_val:%.1lf\n",new_d->deviceSettings[index]->key,(*((double *) new_d->deviceSettings[index]->item)));
+                            }
                             break;
                         }
                         case param: {
@@ -146,19 +225,9 @@ Device **getDevices(char *data,int *pos,int devs){
                                 new_d->deviceParams=malloc(sizeof(Key)*STORAGE_SIZE);
                                 memset(new_d->deviceParams,0,sizeof (Key)*STORAGE_SIZE);
                             }
-                            addToDeviceStorage(out, new_d->deviceParams);
-                            int index=(hashcode(strlen(out[0]),out[0])%STORAGE_SIZE);
-                            printf("\t\tdevice param data:\n\t\t\tparam_name:%s\n\t\t\tparam_val:%.1lf\n",new_d->deviceParams[index]->key,(*((double *)new_d->deviceParams[index]->item)));
-                            break;
-                        }
-                        case slot_param: {
-                            if(new_d->slotParams==NULL){
-                                new_d->slotParams=malloc(sizeof(Key)*STORAGE_SIZE);
-                                memset(new_d->slotParams,0,sizeof (Key)*STORAGE_SIZE);
-                            }
-                            addToDeviceStorage(out, new_d->slotParams);
-                            int index=(hashcode(strlen(out[0]),out[0])%STORAGE_SIZE);
-                            printf("\t\tslot data:\n\t\t\tparam_name:%s\n\t\t\tparam_val:%.1lf\n",new_d->slotParams[index]->key,(*((double *)new_d->slotParams[index]->item)));
+                            addToDeviceStorage(split_data, new_d->deviceParams);
+                            int index=(hashcode(strlen(split_data[0]),split_data[0])%STORAGE_SIZE);
+                            printf("\t\tdevice param data:\n\t\t\tparam_name:%s\n\t\t\tparam_val:%lf\n",new_d->deviceParams[index]->key,(*((double *)new_d->deviceParams[index]->item)));
                             break;
                         }
                         default:
@@ -171,6 +240,7 @@ Device **getDevices(char *data,int *pos,int devs){
         *pos=(*pos)+1;
     }
     printf("end\n");
+    new_d->device_num=((new_d->device_num)>-1)? new_d->device_num:device;
     device_list[device]=new_d;
     *pos=(*pos)+1;
     return device_list;
