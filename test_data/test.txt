@@ -1,1 +1,1 @@
-alias boop s0
+sb 648608238 SettingOutput 1

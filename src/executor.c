@@ -28,9 +28,9 @@ enum Commands getTokenType(struct _expr *expr){
 }
 /**
  * this function is used to execute one statement on provided environment
- * @param trace
- * @param env
- * @param start
+ * @param trace the pointer to a pointer that is the statement that you want to execute
+ * @param env the environment that you want to execute agents
+ * @param pdata the parsed data which includes labels and redefinitions
  */
 void execute_stmt(Statement **trace,Enviro *env,struct parsedata *pdata){
     if((*trace)->stm_expr->type!=LABEL) {

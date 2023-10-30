@@ -7,6 +7,7 @@ int main() {
     //readinEniro("../test_data/ev_test.ic10e");
     TokenNode *list;
     list=Lexer("../test_data/test.txt");
+    printlex(list);
     struct parsedata *start =Parse(&list);
     printTree(start);
     printf("done");
