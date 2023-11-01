@@ -23,9 +23,10 @@ void AddToken (TokenNode **head, TokenNode *newToken){
 }
 Token *stringlookup(char *curstring){
     int len = sizeof(commandList)/ sizeof(struct commandToken);
-    Token *new = malloc(sizeof(Token));
+
     for(int i=0;i<len;i++){
         if(strcmp(curstring,commandList[i].str)==0){
+            Token *new = malloc(sizeof(Token));
              new->string=commandList[i].str;
              new->tokenType=commandList[i].tokentype;
              new->OP_type=commandList[i].OP_type;
