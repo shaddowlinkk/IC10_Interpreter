@@ -3,6 +3,7 @@
 //
 
 #include "../include/Lexer.h"
+#include "assert.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,6 +13,7 @@ TokenNode *NewToken(Token *token){
     newToken = (TokenNode *) malloc(sizeof(TokenNode));
     newToken->token= token;
     newToken->next= NULL;
+    return newToken;
 }
 void AddToken (TokenNode **head, TokenNode *newToken){
     TokenNode **tracker = head;
@@ -19,7 +21,6 @@ void AddToken (TokenNode **head, TokenNode *newToken){
         tracker = &(*tracker)->next;
     }
     (*tracker)=newToken;
-
 }
 Token *stringlookup(char *curstring){
     int len = sizeof(commandList)/ sizeof(struct commandToken);

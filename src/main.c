@@ -1,6 +1,6 @@
 #include <stdio.h>
-//#include "../include/Lexer.h"
-//#include "../include/Parser.h"
+#include "../include/Lexer.h"
+#include "../include/Parser.h"
 #include "../include/readEnviroment.h"
 #include "../include/tui.h"
 int main() {
