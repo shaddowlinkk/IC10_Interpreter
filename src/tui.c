@@ -1,3 +1,4 @@
+/*
 //
 // Created by nathan_pc on 10/18/2023.
 //
@@ -223,3 +224,4 @@ int debug(){
     printf("\n\nprinting lex\n");
     printlex(list);
 }
+*/

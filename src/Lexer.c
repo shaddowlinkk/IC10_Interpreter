@@ -50,11 +50,11 @@ char *GetNextString(char *data,int *pos) {
             skipComments(data, pos);
             continue;
         }
-        strncat_s(temp,100,&data[*pos],1);
+        strncat(temp,&data[*pos],1);
         *pos=(*pos)+1;
         if(strcmp(temp,"HASH")==0){
             while (data[*pos]!= ')'){
-                strncat_s(temp,100,&data[*pos],1);
+                strncat(temp,&data[*pos],1);
                 *pos=(*pos)+1;
             }
 
@@ -78,7 +78,7 @@ TokenNode *Lex(char *fileData){
 
         }else if((int)*curString>=0x30&&(int)*curString<=0x39||(*curString=='-'&&(int)*(curString+1)>=0x30&&(int)*(curString+1)<=0x39)){
             char *lit= malloc(strlen(curString)+1);
-            strncpy_s(lit,strlen(curString)+1,curString, strlen(curString)+1);
+            strncpy(lit,curString, strlen(curString)+1);
             Token *new2 = malloc(sizeof(Token));
             new2->tokenType=TT_NUM;
             new2->string=lit;
@@ -88,7 +88,7 @@ TokenNode *Lex(char *fileData){
             memset(curString,'\0',((sizeof(char))*100));
         }else if (strncmp(curString,"HASH",4)==0) {
             char *lit= malloc(strlen(curString)+1);
-            strncpy_s(lit,strlen(curString)+1,curString, strlen(curString)+1);
+            strncpy(lit,curString, strlen(curString)+1);
             Token *nl = malloc(sizeof(Token));
             nl->tokenType=TT_HASH;
             nl->string=lit;
@@ -98,7 +98,7 @@ TokenNode *Lex(char *fileData){
             memset(curString,'\0',((sizeof(char))*100));
         }else if (strncmp(curString,"%",1)==0) {
             char *lit= malloc(strlen(curString)+1);
-            strncpy_s(lit,strlen(curString)+1,curString, strlen(curString)+1);
+            strncpy(lit,curString, strlen(curString)+1);
             Token *nl = malloc(sizeof(Token));
             nl->tokenType=TT_NUM;
             nl->string=lit;
@@ -108,7 +108,7 @@ TokenNode *Lex(char *fileData){
             memset(curString,'\0',((sizeof(char))*100));
         }else if (strncmp(curString,"$",1)==0) {
             char *lit= malloc(strlen(curString)+1);
-            strncpy_s(lit,strlen(curString)+1,curString, strlen(curString)+1);
+            strncpy(lit,curString, strlen(curString)+1);
             Token *nl = malloc(sizeof(Token));
             nl->tokenType=TT_NUM;
             nl->string=lit;
@@ -118,7 +118,7 @@ TokenNode *Lex(char *fileData){
             memset(curString,'\0',((sizeof(char))*100));
         }else if (strncmp((curString+(strlen(curString)-2)),":",1)==0 && strncmp(curString,"d",1)==0) {//< need to add for labels
             char *lit= malloc(strlen(curString)+1);
-            strncpy_s(lit,strlen(curString)+1,curString, strlen(curString)+1);
+            strncpy(lit,curString, strlen(curString)+1);
             Token *nl = malloc(sizeof(Token));
             nl->tokenType=TT_DEVICE_CON;
             nl->string=lit;
@@ -127,7 +127,7 @@ TokenNode *Lex(char *fileData){
             memset(curString,'\0',((sizeof(char))*100));
         }else if (strncmp((curString+(strlen(curString)-1)),":",1)==0) {//< need to add for labels
             char *lit= malloc(strlen(curString)+1);
-            strncpy_s(lit,strlen(curString)+1,curString, strlen(curString)+1);
+            strncpy(lit,curString, strlen(curString)+1);
             Token *nl = malloc(sizeof(Token));
             nl->tokenType=TT_LABEL;
             nl->string=lit;
@@ -138,7 +138,7 @@ TokenNode *Lex(char *fileData){
         }else{
             if(strlen(curString)>0) {
                 char *lit = malloc(strlen(curString) + 1);
-                strncpy_s(lit,strlen(curString) + 1,curString, strlen(curString) + 1);
+                strncpy(lit,curString, strlen(curString) + 1);
                 Token *nl = malloc(sizeof(Token));
                 nl->tokenType = TT_STRING;
                 nl->string = lit;

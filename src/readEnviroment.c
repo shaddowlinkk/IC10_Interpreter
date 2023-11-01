@@ -18,7 +18,7 @@ char *GetNextEniroString(char *data,int *pos) {
         if(data[*pos]<=90 &&data[*pos]>=65){
             data[*pos]=data[*pos]+32;
         }
-        strncat_s(temp,100,&data[*pos],1);
+        strncat(temp,&data[*pos],1);
         *pos=(*pos)+1;
     }
     return temp;
@@ -36,13 +36,13 @@ void splitqw(char *data,char **out){
                 size++;
                 out[index] = malloc(size);
                 memset(out[index],0,size);
-                strncpy_s(out[index], size, temp, size);
+                strncpy(out[index],  temp, size);
                 memset(temp, '\0', 50);
                 pos++;
                 index++;
                 continue;
             }
-            strncat_s(temp, 50, &data[pos], 1);
+            strncat(temp,  &data[pos], 1);
             size++;
         }
         pos++;
@@ -50,7 +50,7 @@ void splitqw(char *data,char **out){
     size++;
     out[index]= malloc(size);
     memset(out[index],0,size);
-    strncpy_s(out[index],size,temp,size);
+    strncpy(out[index],temp,size);
 }
 void addToDeviceStorage(char ** data, Key **storage){
 
@@ -60,7 +60,7 @@ void addToDeviceStorage(char ** data, Key **storage){
     newKey->next=NULL;
     newKey->key= malloc(32);
     memset(newKey->key,0,32);
-    strncpy_s(newKey->key,32,data[0],newKey->size);
+    strncpy(newKey->key,data[0],newKey->size);
     newKey->item=&con;
     int index=keyhashcode(*newKey)%STORAGE_SIZE;
     if(storage[index]==NULL){
@@ -202,7 +202,7 @@ Device **getDevices(char *data,int *pos,int devs){
                     size++;
                     new_d->name= malloc(size);
                     memset(new_d->name,0,size);
-                    strncpy_s(new_d->name,size,split_data[1],size-1);
+                    strncpy(new_d->name,split_data[1],size-1);
                     printf("\t\tname:\n\t\t\tparam_name:%s\n\t\t\tparam_val:%s\n",split_data[0],split_data[1]);
                 }else {
                     switch (currstate) {

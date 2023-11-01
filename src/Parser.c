@@ -14,7 +14,7 @@ void addRedefine(struct parsedata *out,char *key,char *data){
     new_key->size=(new_key->size<32)?new_key->size: 32;
     new_key->key= malloc(32);
     memset(new_key->key,0,32);
-    strncpy_s(new_key->key,32,key,new_key->size);
+    strncpy(new_key->key,key,new_key->size);
     new_key->next=NULL;
     new_key->item=data;
     int index= keyhashcode(*new_key) % 128;
@@ -216,7 +216,7 @@ struct parsedata *Parse(TokenNode **tokenlist){
                     new_key->size=(new_key->size<32)?new_key->size: 32;
                     new_key->key= malloc(32);
                     memset(new_key->key,0,32);
-                    strncpy_s(new_key->key,32,(*listtracer)->token->string,new_key->size);
+                    strncpy(new_key->key,(*listtracer)->token->string,new_key->size);
                     new_key->next=NULL;
                     new_key->item=(*parsTracer);
                     int index= keyhashcode(*new_key) % 512;
