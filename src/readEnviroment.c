@@ -2,13 +2,14 @@
 // Created by nathan_pc on 10/15/2023.
 //
 
+
+#define STORAGE_SIZE 512
+#define DEFAULT_DEVICES 10
 #include "../include/readEnviroment.h"
 #include "../include/Util.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#define STORAGE_SIZE 512
-#define DEFAULT_DEVICES 10
 //todo make sure that no  bad data can come into the system from reading ic10e files
 char *GetNextEniroString(char *data,int *pos) {
     char *temp= malloc(100);

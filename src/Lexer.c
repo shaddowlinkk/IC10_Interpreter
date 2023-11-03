@@ -37,7 +37,7 @@ Token *stringlookup(char *curstring){
     }
     return NULL;
 }
-void skipComments(char *data,int *pos){
+void skipComments(const char *data,int *pos){
     while (data[*pos]!='\n' && data[*pos]!='\0') {
         *pos=(*pos)+1;
     }

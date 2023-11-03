@@ -200,6 +200,30 @@ src/Util.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\IC10_Interpreter.dir\build.make CMakeFiles/IC10_Interpreter.dir/src/Util.c.s
 .PHONY : src/Util.c.s
 
+src/debug.obj: src/debug.c.obj
+.PHONY : src/debug.obj
+
+# target to build an object file
+src/debug.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\IC10_Interpreter.dir\build.make CMakeFiles/IC10_Interpreter.dir/src/debug.c.obj
+.PHONY : src/debug.c.obj
+
+src/debug.i: src/debug.c.i
+.PHONY : src/debug.i
+
+# target to preprocess a source file
+src/debug.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\IC10_Interpreter.dir\build.make CMakeFiles/IC10_Interpreter.dir/src/debug.c.i
+.PHONY : src/debug.c.i
+
+src/debug.s: src/debug.c.s
+.PHONY : src/debug.s
+
+# target to generate assembly for a file
+src/debug.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\IC10_Interpreter.dir\build.make CMakeFiles/IC10_Interpreter.dir/src/debug.c.s
+.PHONY : src/debug.c.s
+
 src/executor.obj: src/executor.c.obj
 .PHONY : src/executor.obj
 
@@ -314,6 +338,9 @@ help:
 	@echo ... src/Util.obj
 	@echo ... src/Util.i
 	@echo ... src/Util.s
+	@echo ... src/debug.obj
+	@echo ... src/debug.i
+	@echo ... src/debug.s
 	@echo ... src/executor.obj
 	@echo ... src/executor.i
 	@echo ... src/executor.s

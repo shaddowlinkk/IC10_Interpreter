@@ -12,4 +12,6 @@ add_executable(IC10_Interpreter src/main.c src/Lexer.c include/Lexer.h include/t
         include/readEnviroment.h
         src/tui.c
         include/tui.h
+        src/debug.c
+        include/debug.h
 )
