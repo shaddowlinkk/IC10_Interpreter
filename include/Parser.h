@@ -8,7 +8,6 @@
 #include "Util.h"
 #include "debug.h"
 struct parsedata{
-    Debug *debug;
     Key *lables[512];//item type statment
     Key *redef[128];
     int lines;

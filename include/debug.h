@@ -9,12 +9,9 @@ struct devicelist{
     char *Deviceparam[512];
     struct devicelist *next;
 };
-struct hashKeylist{
-    char *lable[512];
-    struct devicelist *list;
-};
+
 typedef struct _debug{
-    struct hashKeylist lists;
+    struct devicelist *lists;
 }Debug;
 
 #endif //IC10_INTERPRETER_DEBUG_H
