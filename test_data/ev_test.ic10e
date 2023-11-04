@@ -4,6 +4,7 @@
 		deviceNum=30
 		name="printer"
 		device hash="40"
+		asdfasdf=80
 		[Device Params]
 		on=0
 		[Slot Params]

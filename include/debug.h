@@ -4,6 +4,9 @@
 
 #ifndef IC10_INTERPRETER_DEBUG_H
 #define IC10_INTERPRETER_DEBUG_H
+
+#include "readEnviroment.h"
+
 struct devicelist{
     char *DeviceSetting[512];
     char *Deviceparam[512];
@@ -13,5 +16,5 @@ struct devicelist{
 typedef struct _debug{
     struct devicelist *lists;
 }Debug;
-
+void getKeysEnv(Enviro *env,Debug *out);
 #endif //IC10_INTERPRETER_DEBUG_H

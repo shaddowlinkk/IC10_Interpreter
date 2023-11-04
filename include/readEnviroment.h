@@ -5,6 +5,7 @@
 #ifndef IC10_INTERPRETER_READENVIROMENT_H
 #define IC10_INTERPRETER_READENVIROMENT_H
 #include "parser.h"
+#define STORAGE_SIZE 512
 
 struct slotdata{
     char *name;
@@ -28,7 +29,6 @@ typedef struct _device{
 
 }Device;
 typedef struct _environment{
-    Debug *debug;
     Device **devices;
     int numdevs;
     double regs[18];

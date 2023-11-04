@@ -3,7 +3,6 @@
 //
 
 
-#define STORAGE_SIZE 512
 #define DEFAULT_DEVICES 10
 #include "../include/readEnviroment.h"
 #include "../include/Util.h"
@@ -55,14 +54,15 @@ void splitqw(char *data,char **out){
 }
 void addToDeviceStorage(char ** data, Key **storage){
 
-    double con = strtod(data[1],NULL);
+    double *con = malloc(sizeof(double ));
+    *con=strtod(data[1],NULL);
     Key *newKey= malloc(sizeof(Key));
     newKey->size= strlen(data[0]);
     newKey->next=NULL;
     newKey->key= malloc(32);
     memset(newKey->key,0,32);
     strncpy_s(newKey->key,32,data[0],newKey->size);
-    newKey->item=&con;
+    newKey->item=con;
     int index=keyhashcode(*newKey)%STORAGE_SIZE;
     if(storage[index]==NULL){
         storage[index]=newKey;
@@ -228,7 +228,7 @@ Device **getDevices(char *data,int *pos,int devs){
                             }
                             addToDeviceStorage(split_data, new_d->deviceParams);
                             int index=(hashcode(strlen(split_data[0]),split_data[0])%STORAGE_SIZE);
-                            printf("\t\tdevice param data:\n\t\t\tparam_name:%s\n\t\t\tparam_val:%lf\n",new_d->deviceParams[index]->key,(*((double *)new_d->deviceParams[index]->item)));
+                            printf("\t\tdevice param data:\n\t\t\tparam_name:%s\n\t\t\tparam_val:%.1lf\n",new_d->deviceParams[index]->key,(*((double *)new_d->deviceParams[index]->item)));
                             break;
                         }
                         default:
@@ -260,8 +260,8 @@ Enviro *proccesFile(char *fileData,int size){
             if(temp[0]=='['){
                if(strncmp(temp,"[devices]",9)==0) {
                    printf("control:%s\n", temp);
-                   int num =(out->numdevs>-1)? out->numdevs:DEFAULT_DEVICES;
-                   out->devices=getDevices(fileData, &pos,num);
+                   out->numdevs =(out->numdevs>-1)? out->numdevs:DEFAULT_DEVICES;
+                   out->devices=getDevices(fileData, &pos,out->numdevs);
                }else if(strncmp(temp,"[registers]",11)==0){
                    type=reg;
                    printf("control:%s\n", temp);

@@ -6,7 +6,7 @@
 		[Device Params]
 		on=1
 		[Slot Params]
-		asdfas=1
+		{}
 	}
 [Registers]
 r0=23

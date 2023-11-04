@@ -6,7 +6,6 @@
 #define IC10_INTERPRETER_PARSER_H
 #include "Grammer.h"
 #include "Util.h"
-#include "debug.h"
 struct parsedata{
     Key *lables[512];//item type statment
     Key *redef[128];

@@ -45,7 +45,6 @@ struct parsedata *Parse(TokenNode **tokenlist){
     memset(out->lables,0,sizeof(out->lables));
     memset(out->redef,0,sizeof(out->redef));
     out->lines=1;
-    out->debug=NULL;
     out->stmt=start;
         while ((*listtracer)){
             if((*listtracer)->token->tokenType==TT_NEWLINE){
