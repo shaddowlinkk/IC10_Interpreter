@@ -88,7 +88,7 @@ struct parsedata *Parse(TokenNode **tokenlist){
                     (* parsTracer)->stm_expr->expr->unop=new;
                     (* parsTracer)->line=out->lines;
                     if(new->uop->tokenType==TT_DEFINE || new->uop->tokenType==TT_ALIAS) {
-                        if(new->uin1->tokenType!=TT_REG && new->uin1->tokenType!=TT_DEVICE)
+                        if(new->uin1->tokenType!=TT_REG && new->uin1->tokenType!=TT_DEVICE) //TODO fix that rrrr10 is not a valid alus and hat define doesnt work on numbers
                             break;
                         addRedefine(out, new->uout->string, new->uin1->string);
                     }

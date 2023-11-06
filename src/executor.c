@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 enum Commands getTokenType(struct _expr *expr){
     switch (expr->type) {
         case UNOP:
@@ -28,6 +29,22 @@ enum Commands getTokenType(struct _expr *expr){
             return -1;
     }
 }
+int getRegisterData(const char *token,Enviro *env,double *data){
+    int len = (int)strlen(token);
+    if(token[0]=='r'&&token[1]=='r'){
+        char *tmp = malloc(len-1);
+        strncpy(tmp,&token[1],len-1);
+        getRegisterData(tmp,env,data);
+        *data=floor(env->regs[(int)floor(*data)]);
+        return 0;
+    }else if(token[0]=='r' && (token[1]>='0'&&token[1]<='9')){
+        int idx= strtol(&token[1],NULL,0);
+        *data=floor(env->regs[idx]);
+        return 0;
+    }else{
+        return -1;
+    }
+}
 /**
  * this function is used to execute one statement on provided environment
  * @param trace the pointer to a pointer that is the statement that you want to execute
@@ -37,8 +54,14 @@ enum Commands getTokenType(struct _expr *expr){
 void execute_stmt(Statement **trace,Enviro *env,struct parsedata *pdata){
     if((*trace)->stm_expr->type!=LABEL) {
         switch (getTokenType((*trace)->stm_expr)) {
-            case ABS:
+            case ABS:{
+                double in1;
+                if((*trace)->stm_expr->expr->unop->uin1->tokenType == TT_NUM || getRegisterData((*trace)->stm_expr->expr->unop->uin1->string,env,&in1)){
+                    in1= strtod((*trace)->stm_expr->expr->unop->uin1->string,NULL);
+                }else{
+                }
                 break;
+            }
             case ACOS:
                 break;
             case ADD:

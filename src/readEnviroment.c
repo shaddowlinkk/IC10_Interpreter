@@ -163,7 +163,7 @@ Device **getDevices(char *data,int *pos,int devs){
     int currstate=0;
     while (!(data[*pos]=='}' && data[((*pos)+1)]!=',')) {
         if((data[*pos]=='}' && data[((*pos)+1)]==',')) {
-            printf("\tnext\n");
+            //printf("\tnext\n");
             device_list[device]=new_d;
             new_d->device_num=((new_d->device_num)>-1)? new_d->device_num:device;
             device++;
@@ -173,7 +173,7 @@ Device **getDevices(char *data,int *pos,int devs){
         if (data[*pos] != '\t' && data[*pos] != ' ' && data[*pos] != '{' && data[*pos] != '\n') {
             char *temp = GetNextEniroString(data, pos);
             if(temp[0]=='[') {
-                printf("\tdevice control:%s\n", temp);
+                //printf("\tdevice control:%s\n", temp);
                 if(strncmp(temp,"[device settings]",17)==0){
                     currstate=settings;
                 }
@@ -184,10 +184,10 @@ Device **getDevices(char *data,int *pos,int devs){
                     new_d->num_slots=setSlotParams(&new_d->slotParams, data, pos);
                     struct slotnode **tr=&new_d->slotParams;
                     while ((*tr)){
-                        printf("\t\tslot:%d\n",(*tr)->slotNum);
+                        //printf("\t\tslot:%d\n",(*tr)->slotNum);
                         struct slotdata **trd =&(*tr)->start;
                         while ((*trd)){
-                            printf("\t\t\tname:%s\n\t\t\t\tdata:%s\n",(*trd)->name,(*trd)->data);
+                            //printf("\t\t\tname:%s\n\t\t\t\tdata:%s\n",(*trd)->name,(*trd)->data);
                             trd=&(*trd)->next;
                         }
                         tr=&(*tr)->next;
@@ -204,7 +204,7 @@ Device **getDevices(char *data,int *pos,int devs){
                     new_d->name= malloc(size);
                     memset(new_d->name,0,size);
                     strncpy_s(new_d->name,size,split_data[1],size-1);
-                    printf("\t\tname:\n\t\t\tparam_name:%s\n\t\t\tparam_val:%s\n",split_data[0],split_data[1]);
+                    //printf("\t\tname:\n\t\t\tparam_name:%s\n\t\t\tparam_val:%s\n",split_data[0],split_data[1]);
                 }else {
                     switch (currstate) {
                         case settings: {
@@ -217,7 +217,7 @@ Device **getDevices(char *data,int *pos,int devs){
                             } else{
                                 addToDeviceStorage(split_data, new_d->deviceSettings);
                                 int index = (hashcode(strlen(split_data[0]), split_data[0]) % STORAGE_SIZE);
-                                printf("\t\tdevice setting:\n\t\t\tparam_name:%s\n\t\t\tparam_val:%.1lf\n",new_d->deviceSettings[index]->key,(*((double *) new_d->deviceSettings[index]->item)));
+                                //printf("\t\tdevice setting:\n\t\t\tparam_name:%s\n\t\t\tparam_val:%.1lf\n",new_d->deviceSettings[index]->key,(*((double *) new_d->deviceSettings[index]->item)));
                             }
                             break;
                         }
@@ -228,7 +228,7 @@ Device **getDevices(char *data,int *pos,int devs){
                             }
                             addToDeviceStorage(split_data, new_d->deviceParams);
                             int index=(hashcode(strlen(split_data[0]),split_data[0])%STORAGE_SIZE);
-                            printf("\t\tdevice param data:\n\t\t\tparam_name:%s\n\t\t\tparam_val:%.1lf\n",new_d->deviceParams[index]->key,(*((double *)new_d->deviceParams[index]->item)));
+                            //printf("\t\tdevice param data:\n\t\t\tparam_name:%s\n\t\t\tparam_val:%.1lf\n",new_d->deviceParams[index]->key,(*((double *)new_d->deviceParams[index]->item)));
                             break;
                         }
                         default:
@@ -240,7 +240,7 @@ Device **getDevices(char *data,int *pos,int devs){
         }
         *pos=(*pos)+1;
     }
-    printf("end\n");
+    //printf("end\n");
     new_d->device_num=((new_d->device_num)>-1)? new_d->device_num:device;
     device_list[device]=new_d;
     *pos=(*pos)+1;
@@ -259,20 +259,20 @@ Enviro *proccesFile(char *fileData,int size){
             char *temp = GetNextEniroString(fileData, &pos);
             if(temp[0]=='['){
                if(strncmp(temp,"[devices]",9)==0) {
-                   printf("control:%s\n", temp);
+                   //printf("control:%s\n", temp);
                    out->numdevs =(out->numdevs>-1)? out->numdevs:DEFAULT_DEVICES;
                    out->devices=getDevices(fileData, &pos,out->numdevs);
                }else if(strncmp(temp,"[registers]",11)==0){
                    type=reg;
-                   printf("control:%s\n", temp);
+                   //printf("control:%s\n", temp);
                }else if(strncmp(temp,"[stack]",7)==0){
                    type=stack;
-                   printf("control:%s\n", temp);
+                   //printf("control:%s\n", temp);
                }else if(strncmp(temp,"[envinfo]",7)==0){
                    type=info;
-                   printf("control:%s\n", temp);
+                   //printf("control:%s\n", temp);
                }else{
-                   printf("string:%s\n", temp);
+                   //printf("string:%s\n", temp);
                }
             }else{
                 char *split[2];
@@ -284,7 +284,7 @@ Enviro *proccesFile(char *fileData,int size){
                             char *idx= malloc(sizeof (char*));
                             strcpy(idx,split[0]);
                             out->regs[strtol(idx,NULL,0)] = strtod(split[1],NULL);
-                            printf("\t reg:%d\n\t\tval:%.1lf\n",(int)strtol(idx,NULL,0),out->regs[strtol(idx,NULL,0)]);
+                            //printf("\t reg:%d\n\t\tval:%.1lf\n",(int)strtol(idx,NULL,0),out->regs[strtol(idx,NULL,0)]);
                             free(idx);
                         }
 
@@ -295,7 +295,7 @@ Enviro *proccesFile(char *fileData,int size){
                             char *idxs= malloc(sizeof (char*));
                             strcpy(idxs, split[0]);
                             out->stack[strtol(idxs,NULL,0)] = strtod(split[1], NULL);
-                            printf("\t stack:%ld\n\t\tval:%.1lf\n", strtol(idxs,NULL,0),out->stack[strtol(idxs,NULL,0)]);
+                            //printf("\t stack:%ld\n\t\tval:%.1lf\n", strtol(idxs,NULL,0),out->stack[strtol(idxs,NULL,0)]);
                             free(idxs);
                         }
                         break;
