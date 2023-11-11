@@ -66,8 +66,6 @@ void execute_stmt(Statement **trace,Enviro *env,struct parsedata *pdata){
                 break;
             case ADD:
                 break;
-            case ALIAS:
-                break;
             case AND:
                 break;
             case ASIN:
@@ -191,8 +189,6 @@ void execute_stmt(Statement **trace,Enviro *env,struct parsedata *pdata){
             case CEIL:
                 break;
             case COS:
-                break;
-            case DEFINE:
                 break;
             case DIV:
                 break;

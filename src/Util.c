@@ -21,7 +21,7 @@ int keyhashcode(Key key){
 }
 
 // got this from -> https://stackoverflow.com/questions/21001659/crc32-algorithm-implementation-in-c-without-a-look-up-table-and-with-a-public-li
-unsigned int crc32b(unsigned char *message) {
+unsigned int crc32b(const unsigned char *message) {
     int i, j;
     unsigned int byte, crc, mask;
 

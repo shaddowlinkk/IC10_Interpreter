@@ -3,7 +3,7 @@
 //
 
 #include "../include/Lexer.h"
-#include "assert.h"
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -64,7 +64,32 @@ char *GetNextString(char *data,int *pos) {
     }
     return temp;
 }
-
+int checkRecursiveReg(char *string,int len){
+    assert(len>0);
+    char *p=string;
+    char *p1=string+1;
+    int flag=0;
+    for (void *end=&p[len];p1!=end;p++,p1++) {
+        if (!(*p == 'r' && *p1 == 'r') ) {
+            if(*p1>='0'&&*p1<='9') {
+                flag=(strtol(p1, NULL,0)<=17)? 1:0;
+                break;
+            }
+            break;
+        }
+    }
+    return flag;
+}
+Token *create_token(char *string,enum TT_token TT_type,enum Commands OP_type,enum type type){
+    char *lit= malloc(strlen(string)+1);
+    strncpy_s(lit,strlen(string)+1,string, strlen(string)+1);
+    Token *nl = malloc(sizeof(Token));
+    nl->tokenType=TT_type;
+    nl->string=lit;
+    nl->OP_type=type;
+    nl->command=OP_type;
+    return nl;
+}
 TokenNode *Lex(char *fileData){
     TokenNode *list= NULL;
     int pos=0;
@@ -77,7 +102,7 @@ TokenNode *Lex(char *fileData){
         if(new!=NULL) {
             AddToken(&list, NewToken(new));
             memset(curString,'\0',((sizeof(char))*100));
-
+//todo refactor replace repeet code with create token
         }else if((int)*curString>=0x30&&(int)*curString<=0x39||(*curString=='-'&&(int)*(curString+1)>=0x30&&(int)*(curString+1)<=0x39)){
             char *lit= malloc(strlen(curString)+1);
             strncpy_s(lit,strlen(curString)+1,curString, strlen(curString)+1);
@@ -137,6 +162,19 @@ TokenNode *Lex(char *fileData){
             nl->command=CNULL;
             AddToken(&list, NewToken(nl));
             memset(curString,'\0',((sizeof(char))*100));
+        }else if((*curString=='d'||*curString=='r')&& checkRecursiveReg(curString+1, (int)strlen(curString+1))){
+            switch (*curString) {
+                case 'r': {
+                    AddToken(&list, NewToken(create_token(curString,TT_REG,CNULL,TNULL)));
+                    memset(curString,'\0',((sizeof(char))*100));
+                    break;
+                }
+                case 'd': {
+                    AddToken(&list, NewToken(create_token(curString,TT_DEVICE,CNULL,TNULL)));
+                    memset(curString,'\0',((sizeof(char))*100));
+                    break;
+                }
+            }
         }else{
             if(strlen(curString)>0) {
                 char *lit = malloc(strlen(curString) + 1);
