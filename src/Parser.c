@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 
+
 void addRedefine(struct parsedata *out,char *key,char *data){
     Key *new_key= malloc(sizeof(Key));
     int len =(int)strlen(key);
@@ -17,7 +18,7 @@ void addRedefine(struct parsedata *out,char *key,char *data){
     strncpy_s(new_key->key,32,key,new_key->size);
     new_key->next=NULL;
     new_key->item=data;
-    int index= keyhashcode(*new_key) % 128;
+    int index= keyhashcode(*new_key) % REDEF_SIZE;
     if(out->redef[index]==NULL){
         out->redef[index]=new_key;
     }else{
@@ -88,7 +89,7 @@ struct parsedata *Parse(TokenNode **tokenlist){
                     (* parsTracer)->stm_expr->expr->unop=new;
                     (* parsTracer)->line=out->lines;
                     if(new->uop->tokenType==TT_DEFINE || new->uop->tokenType==TT_ALIAS) {
-                        if(new->uin1->tokenType!=TT_REG && new->uin1->tokenType!=TT_DEVICE) //TODO fix that rrrr10 is not a valid alus and hat define doesnt work on numbers
+                        if(new->uin1->tokenType!=TT_REG && new->uin1->tokenType!=TT_DEVICE)
                             break;
                         addRedefine(out, new->uout->string, new->uin1->string);
                     }

@@ -17,5 +17,6 @@ typedef struct _node{
     struct _node *next;
 }TokenNode;
 TokenNode *Lexer(char *Filename);
+int checkRecursiveReg( char *string,int len);
 void printlex(TokenNode *list);
 #endif //IC10_INTERPRETER_LEXER_H

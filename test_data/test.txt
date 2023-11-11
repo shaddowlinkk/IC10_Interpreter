@@ -1,1 +1,3 @@
-abs r0 rrrrr4
+abs r0 1
+abs r1 1
+abs r2 1

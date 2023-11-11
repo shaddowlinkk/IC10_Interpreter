@@ -29,21 +29,71 @@ enum Commands getTokenType(struct _expr *expr){
             return -1;
     }
 }
-double getRegisterData(const char *token,Enviro *env){
+
+double getRegisterData(const char *token,Enviro *env,struct parsedata *pdata){
     //can be optimized useing pointer arithmatic
     double data;
     int len = (int)strlen(token);
     if(token[0]=='r'&&token[1]=='r'){
         char *tmp = malloc(len-1);
         strncpy(tmp,&token[1],len-1);
-        data=floor(env->regs[(int)floor(getRegisterData(tmp,env))]);
+        data=env->regs[(int)floor(getRegisterData(tmp,env,pdata))];
         return data;
     }else if((token[1]>='0'&&token[1]<='9')){
         int idx= strtol(&token[1],NULL,0);
-        data=floor(env->regs[idx]);
+        data=env->regs[idx];
         return data;
     }else{
         return strtol(&token[0],NULL,0);
+    }
+}
+double getDataForInToken(Token *token,Enviro *env,struct parsedata *pdata){
+    double out;
+    int index=(hashcode(strlen(token->string),token->string)%REDEF_SIZE);
+    if (token->tokenType==TT_NUM||token->tokenType==TT_REG){
+        return (token->tokenType==TT_NUM)? strtod(token->string,NULL): getRegisterData(token->string,env,pdata);
+    }else if(pdata->redef[index]!=NULL){
+        char *p=pdata->redef[index]->item;
+        return (*p=='r')? getRegisterData(p,env,pdata): strtod(p,NULL);
+    }
+    return 0;
+}
+int getOutReg(Token *token,Enviro *env,struct parsedata *pdata){
+    double out;
+    int index=(hashcode(strlen(token->string),token->string)%REDEF_SIZE);
+    if (token->tokenType==TT_REG){
+        return strtol(token->string+1,NULL,0);
+    }else if(pdata->redef[index]!=NULL){
+        char *p=pdata->redef[index]->item;
+        if(*p=='r'){
+            return floor(getRegisterData((p+1),env,pdata));
+        } else{
+            exit(-5);
+        }
+    }
+    return 0;
+}
+void execute_unmath(struct unop *data,Enviro *env,struct parsedata *pdata,double (*opt) (double )){
+    {
+        int idx=getOutReg(data->uout,env,pdata);
+        double fin=getDataForInToken(data->uin1,env,pdata);
+        env->regs[idx]= (*opt)(fin);
+    }
+}
+void execute_jump(Statement **trace,Enviro *env,struct parsedata *pdata,Token *jumploc){
+    int index=(hashcode(strlen(jumploc->string),jumploc->string)%512);
+    if(jumploc->tokenType==TT_NUM){
+        int idx= floor(strtod(jumploc->string,NULL));
+        while ((pdata->line_table+idx)==NULL){
+            idx++;
+        }
+        if(pdata->line_table[idx].back!=NULL) {
+            trace = &pdata->line_table[idx].back->statement;
+        }else{
+            (*trace)=&pdata->line_table[idx];
+        }
+    }else if (pdata->lables[index]!=NULL){
+        trace=&((Statement *)(pdata->lables[index]->item))->back->statement; // todo fix that jump 1 needs a diffrent line see if above
     }
 }
 /**
@@ -56,30 +106,48 @@ void execute_stmt(Statement **trace,Enviro *env,struct parsedata *pdata){
     if((*trace)->stm_expr->type!=LABEL) {
         switch (getTokenType((*trace)->stm_expr)) {
             case ABS:{
-                double in1=0;
-                if((*trace)->stm_expr->expr->unop->uin1->tokenType == TT_NUM || (*trace)->stm_expr->expr->unop->uin1->tokenType == TT_REG){
-                    in1=((*trace)->stm_expr->expr->unop->uin1->tokenType == TT_NUM)?
-                            strtod((*trace)->stm_expr->expr->unop->uin1->string,NULL):
-                            getRegisterData((*trace)->stm_expr->expr->unop->uin1->string,env);
-                    env->regs[(int)getRegisterData((*trace)->stm_expr->expr->unop->uout->string+1,env)]= abs((int)in1);
-                }else{
-                }
+                execute_unmath((*trace)->stm_expr->expr->unop,env,pdata,fabs);
                 break;
             }
-            case ACOS:
+            case ACOS:{
+                execute_unmath((*trace)->stm_expr->expr->unop,env,pdata,acos);
                 break;
-            case ADD:
+            }
+            case ADD: {
+                int idx = getOutReg((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double fin1= getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                double fin2= getDataForInToken((*trace)->stm_expr->expr->binop->bin2,env,pdata);
+                env->regs[idx]= fin1+fin2;
                 break;
-            case AND:
+            }
+            case AND: {
+                int idx = getOutReg((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double fin1= getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                double fin2= getDataForInToken((*trace)->stm_expr->expr->binop->bin2,env,pdata);
+                env->regs[idx]=(long)fin1 & (long)fin2;
                 break;
-            case ASIN:
+            }
+            case ASIN:{
+                execute_unmath((*trace)->stm_expr->expr->unop,env,pdata,asin);
                 break;
+            }
             case ATAN:
+                execute_unmath((*trace)->stm_expr->expr->unop,env,pdata,atan);
                 break;
-            case ATAN2:
+            case ATAN2: {
+                int idx = getOutReg((*trace)->stm_expr->expr->binop->bout, env, pdata);
+                double fin1 = getDataForInToken((*trace)->stm_expr->expr->binop->bin1, env, pdata);
+                double fin2 = getDataForInToken((*trace)->stm_expr->expr->binop->bin2, env, pdata);
+                env->regs[idx] = atan2(fin1,fin2);
                 break;
-            case BAP:
+            }
+            case BAP: {
+                double a= getDataForInToken((*trace)->stm_expr->expr->triop->tout,env,pdata);
+                double b= getDataForInToken((*trace)->stm_expr->expr->triop->tin1,env,pdata);
+                double c= getDataForInToken((*trace)->stm_expr->expr->triop->tin2,env,pdata);
+                double d= getDataForInToken((*trace)->stm_expr->expr->triop->tin3,env,pdata);
                 break;
+            }
             case BAPAL:
                 break;
             case BAPZ:

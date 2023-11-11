@@ -16,10 +16,12 @@ int main() {
     struct parsedata *start =Parse(&list);
     printTree(start);
     Enviro *env=readinEniro("../test_data/sim.ic10e");
-    double r=getRegisterData("rrrr4",env);
-    printf("rd:%.lf\n",r);
+/*    double r=getRegisterData("1",env,start);
+    printf("rd:%.1lf\n",r);
     execute_stmt(&start->stmt,env,start);
-     r=getRegisterData("r0",env);
-    printf("rd:%.lf\n",r);
+     r=getRegisterData("r0",env,start);
+    printf("rd:%.1lf\n",r);*/
+    Statement **stmt_Tracer =&start->stmt;
+    stmt_Tracer=&(start->line_table[2].back->statement);
     printf("done");
 }
