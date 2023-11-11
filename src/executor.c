@@ -29,20 +29,21 @@ enum Commands getTokenType(struct _expr *expr){
             return -1;
     }
 }
-int getRegisterData(const char *token,Enviro *env,double *data){
+double getRegisterData(const char *token,Enviro *env){
+    //can be optimized useing pointer arithmatic
+    double data;
     int len = (int)strlen(token);
     if(token[0]=='r'&&token[1]=='r'){
         char *tmp = malloc(len-1);
         strncpy(tmp,&token[1],len-1);
-        getRegisterData(tmp,env,data);
-        *data=floor(env->regs[(int)floor(*data)]);
-        return 0;
-    }else if(token[0]=='r' && (token[1]>='0'&&token[1]<='9')){
+        data=floor(env->regs[(int)floor(getRegisterData(tmp,env))]);
+        return data;
+    }else if((token[1]>='0'&&token[1]<='9')){
         int idx= strtol(&token[1],NULL,0);
-        *data=floor(env->regs[idx]);
-        return 0;
+        data=floor(env->regs[idx]);
+        return data;
     }else{
-        return -1;
+        return strtol(&token[0],NULL,0);
     }
 }
 /**
@@ -55,9 +56,12 @@ void execute_stmt(Statement **trace,Enviro *env,struct parsedata *pdata){
     if((*trace)->stm_expr->type!=LABEL) {
         switch (getTokenType((*trace)->stm_expr)) {
             case ABS:{
-                double in1;
-                if((*trace)->stm_expr->expr->unop->uin1->tokenType == TT_NUM || getRegisterData((*trace)->stm_expr->expr->unop->uin1->string,env,&in1)){
-                    in1= strtod((*trace)->stm_expr->expr->unop->uin1->string,NULL);
+                double in1=0;
+                if((*trace)->stm_expr->expr->unop->uin1->tokenType == TT_NUM || (*trace)->stm_expr->expr->unop->uin1->tokenType == TT_REG){
+                    in1=((*trace)->stm_expr->expr->unop->uin1->tokenType == TT_NUM)?
+                            strtod((*trace)->stm_expr->expr->unop->uin1->string,NULL):
+                            getRegisterData((*trace)->stm_expr->expr->unop->uin1->string,env);
+                    env->regs[(int)getRegisterData((*trace)->stm_expr->expr->unop->uout->string+1,env)]= abs((int)in1);
                 }else{
                 }
                 break;

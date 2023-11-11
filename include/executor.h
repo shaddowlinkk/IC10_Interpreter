@@ -5,5 +5,6 @@
 #ifndef IC10_INTERPRETER_EXECUTOR_H
 #define IC10_INTERPRETER_EXECUTOR_H
 #include "readEnviroment.h"
-int getRegisterData(const char *token,Enviro *env,double *data);
+double getRegisterData(const char *token,Enviro *env);
+void execute_stmt(Statement **trace,Enviro *env,struct parsedata *pdata);
 #endif //IC10_INTERPRETER_EXECUTOR_H
