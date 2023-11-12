@@ -14,6 +14,7 @@ struct parsedata{
     int lines;
     Statement *line_table;
     Statement *stmt;
+    Statement **trace;
 };
 struct parsedata *Parse(TokenNode **tokenlist);
 void printTree(struct parsedata *tree);

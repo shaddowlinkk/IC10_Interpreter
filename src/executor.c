@@ -48,7 +48,6 @@ double getRegisterData(const char *token,Enviro *env,struct parsedata *pdata){
     }
 }
 double getDataForInToken(Token *token,Enviro *env,struct parsedata *pdata){
-    double out;
     int index=(hashcode(strlen(token->string),token->string)%REDEF_SIZE);
     if (token->tokenType==TT_NUM||token->tokenType==TT_REG){
         return (token->tokenType==TT_NUM)? strtod(token->string,NULL): getRegisterData(token->string,env,pdata);
@@ -80,20 +79,26 @@ void execute_unmath(struct unop *data,Enviro *env,struct parsedata *pdata,double
         env->regs[idx]= (*opt)(fin);
     }
 }
-void execute_jump(Statement **trace,Enviro *env,struct parsedata *pdata,Token *jumploc){
+void execute_jump(Enviro *env,struct parsedata *pdata,Token *jumploc){
     int index=(hashcode(strlen(jumploc->string),jumploc->string)%512);
     if(jumploc->tokenType==TT_NUM){
-        int idx= floor(strtod(jumploc->string,NULL));
+        int idx= (int)floor(strtod(jumploc->string,NULL))-1;
         while ((pdata->line_table+idx)==NULL){
             idx++;
         }
         if(pdata->line_table[idx].back!=NULL) {
-            trace = &pdata->line_table[idx].back->statement;
+            pdata->trace = &pdata->line_table[idx].back->statement;
         }else{
-            (*trace)=&pdata->line_table[idx];
+            (*pdata->trace)=&pdata->line_table[idx];
         }
     }else if (pdata->lables[index]!=NULL){
-        trace=&((Statement *)(pdata->lables[index]->item))->back->statement; // todo fix that jump 1 needs a diffrent line see if above
+        if(((Statement *) (pdata->lables[index]->item))->back!=NULL) {
+            pdata->trace = &((Statement *) (pdata->lables[index]->item))->back->statement;
+        }else{
+            pdata->trace=&pdata->stmt;
+        }
+    }else{
+        exit(-6);
     }
 }
 /**
@@ -102,7 +107,8 @@ void execute_jump(Statement **trace,Enviro *env,struct parsedata *pdata,Token *j
  * @param env the environment that you want to execute agents
  * @param pdata the parsed data which includes labels and redefinitions
  */
-void execute_stmt(Statement **trace,Enviro *env,struct parsedata *pdata){
+void execute_stmt(Enviro *env,struct parsedata *pdata){
+    Statement **trace=pdata->trace;
     if((*trace)->stm_expr->type!=LABEL) {
         switch (getTokenType((*trace)->stm_expr)) {
             case ABS:{
@@ -268,8 +274,10 @@ void execute_stmt(Statement **trace,Enviro *env,struct parsedata *pdata){
                 break;
             case FLOOR:
                 break;
-            case J:
+            case J: {
+                execute_jump(env,pdata,(*trace)->stm_expr->expr->cmd->cin1);
                 break;
+            }
             case JAL:
                 break;
             case JR:

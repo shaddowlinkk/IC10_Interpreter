@@ -14,6 +14,7 @@ int main() {
     list=Lexer("../test_data/test.txt");
     printlex(list);
     struct parsedata *start =Parse(&list);
+    start->trace=&start->stmt;
     printTree(start);
     Enviro *env=readinEniro("../test_data/sim.ic10e");
 /*    double r=getRegisterData("1",env,start);
@@ -21,7 +22,9 @@ int main() {
     execute_stmt(&start->stmt,env,start);
      r=getRegisterData("r0",env,start);
     printf("rd:%.1lf\n",r);*/
-    Statement **stmt_Tracer =&start->stmt;
-    stmt_Tracer=&(start->line_table[2].back->statement);
+    while ((*start->trace)->statement!=NULL){
+        start->trace=&(*start->trace)->statement;
+    }
+    execute_stmt(env,start);
     printf("done");
 }
