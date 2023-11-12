@@ -73,24 +73,28 @@ int getOutReg(Token *token,Enviro *env,struct parsedata *pdata){
     return 0;
 }
 void execute_unmath(struct unop *data,Enviro *env,struct parsedata *pdata,double (*opt) (double )){
-    {
         int idx=getOutReg(data->uout,env,pdata);
         double fin=getDataForInToken(data->uin1,env,pdata);
         env->regs[idx]= (*opt)(fin);
+
+}
+void jumpToLineNumber(Enviro *env,struct parsedata *pdata,int num){
+    int idx=num-1;
+    while ((pdata->line_table+(sizeof (Statement)*idx))==NULL){
+        idx++;
+    }
+    if(pdata->line_table[idx].back!=NULL) {
+        pdata->trace = &pdata->line_table[idx].back->statement;
+    }else{
+        (*pdata->trace)=&pdata->line_table[idx];
     }
 }
 void execute_jump(Enviro *env,struct parsedata *pdata,Token *jumploc){
+    //todo be able jump to aliased location or jump using registers
     int index=(hashcode(strlen(jumploc->string),jumploc->string)%512);
     if(jumploc->tokenType==TT_NUM){
-        int idx= (int)floor(strtod(jumploc->string,NULL))-1;
-        while ((pdata->line_table+idx)==NULL){
-            idx++;
-        }
-        if(pdata->line_table[idx].back!=NULL) {
-            pdata->trace = &pdata->line_table[idx].back->statement;
-        }else{
-            (*pdata->trace)=&pdata->line_table[idx];
-        }
+        int idx= (int)floor(strtod(jumploc->string,NULL));
+        jumpToLineNumber(env,pdata,idx);
     }else if (pdata->lables[index]!=NULL){
         if(((Statement *) (pdata->lables[index]->item))->back!=NULL) {
             pdata->trace = &((Statement *) (pdata->lables[index]->item))->back->statement;

@@ -2,4 +2,4 @@ abs r0 1
 abs r1 1
 test:
 abs r2 1
-j shit
+j 2
