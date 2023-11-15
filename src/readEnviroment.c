@@ -154,9 +154,9 @@ Device *InitDevice(){
     return new_d;
 }
 
-Device **getDevices(char *data,int *pos,int devs){
-    Device **device_list= malloc(sizeof(Device )*devs);
-    memset(device_list,0,sizeof(Device )*devs);
+Device **getDevices(char *data,int *pos,int *devs){
+    Device **device_list= malloc(sizeof(Device )* (*devs));
+    memset(device_list,0,sizeof(Device )* (*devs));
     Device *new_d = InitDevice();
     int device=0;
     enum device_storage{settings,param};
@@ -244,6 +244,7 @@ Device **getDevices(char *data,int *pos,int devs){
     new_d->device_num=((new_d->device_num)>-1)? new_d->device_num:device;
     device_list[device]=new_d;
     *pos=(*pos)+1;
+    *devs=device;
     return device_list;
 }
 Enviro *proccesFile(char *fileData,int size){
@@ -261,7 +262,7 @@ Enviro *proccesFile(char *fileData,int size){
                if(strncmp(temp,"[devices]",9)==0) {
                    //printf("control:%s\n", temp);
                    out->numdevs =(out->numdevs>-1)? out->numdevs:DEFAULT_DEVICES;
-                   out->devices=getDevices(fileData, &pos,out->numdevs);
+                   out->devices=getDevices(fileData, &pos,&out->numdevs);
                }else if(strncmp(temp,"[registers]",11)==0){
                    type=reg;
                    //printf("control:%s\n", temp);

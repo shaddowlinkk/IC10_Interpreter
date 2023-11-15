@@ -22,9 +22,13 @@ int main() {
     execute_stmt(&start->stmt,env,start);
      r=getRegisterData("r0",env,start);
     printf("rd:%.1lf\n",r);*/
-   while ((*start->trace)->statement!=NULL){
+/*    int test = checkForDeviceConnected(env,70);
+    printf("found device:%d\n",test);*/
+   while ((*start->trace)!=NULL){
+       //printf("linenumber:%d\n",(*start->trace)->line);
         execute_stmt(env,start);
         start->trace=&(*start->trace)->statement;
+
     }
     printRegisters(env);
     printf("done");

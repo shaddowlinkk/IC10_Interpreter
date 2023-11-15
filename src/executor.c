@@ -87,7 +87,7 @@ void execute_binary_math(struct binop *data, Enviro *env, struct parsedata *pdat
 
 }
 void jumpToLineNumber(Enviro *env,struct parsedata *pdata,int num){
-    int idx=num-1;
+    int idx=num-2;// need to be this so the incremnet will index the jump right other option is to execute now so
     while ((pdata->line_table+(sizeof (Statement)*idx))==NULL){
         idx++;
     }
@@ -119,10 +119,10 @@ int approx(double a,double b,double c){
     return 0;
 }
 int checkForDeviceConnected(Enviro *env,int devNum){
-    Device **Head=&(*env->devices);
-    while ((*env->devices)){
-        if((*env->devices)->device_num==devNum){
-            env->devices=Head;
+    // this can be oped my calculating adress for ideration <<tolazy at 11:16 to do it
+    Device **start=env->devices;
+    for (Device **end = &env->devices[env->numdevs]; start <=end ; start++) {
+        if((*start)->device_num==devNum){
             return 1;
         }
     }
@@ -202,7 +202,7 @@ void execute_stmt(Enviro *env,struct parsedata *pdata){
                 break;
             }
             case BDNS:{
-                if(checkForDeviceConnected(env,))
+               // if(checkForDeviceConnected(env,))
                 break;
             }
             case BDNSAL:
@@ -235,16 +235,26 @@ void execute_stmt(Enviro *env,struct parsedata *pdata){
                 break;
             case BGTZAL:
                 break;
-            case BLE:
+            case BLE: {
+                double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                if (a<=b)
+                    execute_jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2);
                 break;
+            }
             case BLEAL:
                 break;
             case BLEZ:
                 break;
             case BLEZAL:
                 break;
-            case BLT:
+            case BLT: {
+                double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                if (a<b)
+                    execute_jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2);
                 break;
+            }
             case BLTAL:
                 break;
             case BLTZ:
@@ -327,7 +337,8 @@ void execute_stmt(Enviro *env,struct parsedata *pdata){
                 break;
             }
             case JR:{
-                int loc=(*trace)->line+(int)floor((getDataForInToken((*trace)->stm_expr->expr->cmd->cin1,env,pdata)));
+                int ofset=(int)floor((getDataForInToken((*trace)->stm_expr->expr->cmd->cin1,env,pdata)));
+                int loc=(*trace)->line+ofset;
                 jumpToLineNumber(env,pdata,loc);
                 break;
             }

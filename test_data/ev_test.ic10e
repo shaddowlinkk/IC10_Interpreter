@@ -19,6 +19,7 @@
 	},
 	{
 		[Device settings]
+		deviceNum=70
 		name="house"
 		device hash="50"
 		[Device Params]
@@ -27,7 +28,6 @@
 		{}
 	}
 [Registers]
-r10=23
 [Stack]
 0=1232
 50=3

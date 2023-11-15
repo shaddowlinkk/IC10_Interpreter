@@ -237,6 +237,9 @@ struct parsedata *Parse(TokenNode **tokenlist){
                         }
                     }
                     parsTracer = &(*parsTracer)->statement;
+                    if((*listtracer)->next!=NULL){
+                        listtracer=&(*listtracer)->next;
+                    }
                     break;
                 }
                 case TNULL:
