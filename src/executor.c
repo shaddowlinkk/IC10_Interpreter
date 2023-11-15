@@ -5,6 +5,7 @@
 #include "../include/executor.h"
 #include "../include/parser.h"
 #include "../include/readEnviroment.h"
+#include "../include/interp_math.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -61,7 +62,7 @@ int getOutReg(Token *token,Enviro *env,struct parsedata *pdata){
     double out;
     int index=(hashcode(strlen(token->string),token->string)%REDEF_SIZE);
     if (token->tokenType==TT_REG){
-        return strtol(token->string+1,NULL,0);
+        return floor(getRegisterData(token->string+1,env,pdata));
     }else if(pdata->redef[index]!=NULL){
         char *p=pdata->redef[index]->item;
         if(*p=='r'){
@@ -72,10 +73,17 @@ int getOutReg(Token *token,Enviro *env,struct parsedata *pdata){
     }
     return 0;
 }
-void execute_unmath(struct unop *data,Enviro *env,struct parsedata *pdata,double (*opt) (double )){
+void execute_unary_math(struct unop *data, Enviro *env, struct parsedata *pdata, double (*opt) (double )){
         int idx=getOutReg(data->uout,env,pdata);
         double fin=getDataForInToken(data->uin1,env,pdata);
         env->regs[idx]= (*opt)(fin);
+
+}
+void execute_binary_math(struct binop *data, Enviro *env, struct parsedata *pdata, double (*opt) (double,double )){
+    int idx = getOutReg(data->bout, env, pdata);
+    double fin1 = getDataForInToken(data->bin1, env, pdata);
+    double fin2 = getDataForInToken(data->bin2, env, pdata);
+    env->regs[idx]= (*opt)(fin1,fin2);
 
 }
 void jumpToLineNumber(Enviro *env,struct parsedata *pdata,int num){
@@ -105,6 +113,21 @@ void execute_jump(Enviro *env,struct parsedata *pdata,Token *jumploc){
         exit(-6);
     }
 }
+int approx(double a,double b,double c){
+    if(fabs(a-b)<=max((c*max(a,b)),1.1210387714598537E-44))
+        return 1;
+    return 0;
+}
+int checkForDeviceConnected(Enviro *env,int devNum){
+    Device **Head=&(*env->devices);
+    while ((*env->devices)){
+        if((*env->devices)->device_num==devNum){
+            env->devices=Head;
+            return 1;
+        }
+    }
+    return 0;
+}
 /**
  * this function is used to execute one statement on provided environment
  * @param trace the pointer to a pointer that is the statement that you want to execute
@@ -116,56 +139,72 @@ void execute_stmt(Enviro *env,struct parsedata *pdata){
     if((*trace)->stm_expr->type!=LABEL) {
         switch (getTokenType((*trace)->stm_expr)) {
             case ABS:{
-                execute_unmath((*trace)->stm_expr->expr->unop,env,pdata,fabs);
+                execute_unary_math((*trace)->stm_expr->expr->unop, env, pdata, fabs);
                 break;
             }
             case ACOS:{
-                execute_unmath((*trace)->stm_expr->expr->unop,env,pdata,acos);
+                execute_unary_math((*trace)->stm_expr->expr->unop, env, pdata, acos);
                 break;
             }
             case ADD: {
-                int idx = getOutReg((*trace)->stm_expr->expr->binop->bout,env,pdata);
-                double fin1= getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
-                double fin2= getDataForInToken((*trace)->stm_expr->expr->binop->bin2,env,pdata);
-                env->regs[idx]= fin1+fin2;
+                execute_binary_math((*trace)->stm_expr->expr->binop, env, pdata, CADD);
                 break;
             }
             case AND: {
-                int idx = getOutReg((*trace)->stm_expr->expr->binop->bout,env,pdata);
-                double fin1= getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
-                double fin2= getDataForInToken((*trace)->stm_expr->expr->binop->bin2,env,pdata);
-                env->regs[idx]=(long)fin1 & (long)fin2;
+                execute_binary_math((*trace)->stm_expr->expr->binop, env, pdata, CAND);
                 break;
             }
             case ASIN:{
-                execute_unmath((*trace)->stm_expr->expr->unop,env,pdata,asin);
+                execute_unary_math((*trace)->stm_expr->expr->unop, env, pdata, asin);
                 break;
             }
             case ATAN:
-                execute_unmath((*trace)->stm_expr->expr->unop,env,pdata,atan);
+                execute_unary_math((*trace)->stm_expr->expr->unop, env, pdata, atan);
                 break;
             case ATAN2: {
-                int idx = getOutReg((*trace)->stm_expr->expr->binop->bout, env, pdata);
-                double fin1 = getDataForInToken((*trace)->stm_expr->expr->binop->bin1, env, pdata);
-                double fin2 = getDataForInToken((*trace)->stm_expr->expr->binop->bin2, env, pdata);
-                env->regs[idx] = atan2(fin1,fin2);
+                execute_binary_math((*trace)->stm_expr->expr->binop,env,pdata,atan2);
                 break;
             }
             case BAP: {
                 double a= getDataForInToken((*trace)->stm_expr->expr->triop->tout,env,pdata);
                 double b= getDataForInToken((*trace)->stm_expr->expr->triop->tin1,env,pdata);
                 double c= getDataForInToken((*trace)->stm_expr->expr->triop->tin2,env,pdata);
-                double d= getDataForInToken((*trace)->stm_expr->expr->triop->tin3,env,pdata);
+                if(approx(a,b,c)){
+                    execute_jump(env,pdata,(*trace)->stm_expr->expr->triop->tin3);
+                }
                 break;
             }
-            case BAPAL:
+            case BAPAL: {
+                double a = getDataForInToken((*trace)->stm_expr->expr->triop->tout, env, pdata);
+                double b = getDataForInToken((*trace)->stm_expr->expr->triop->tin1, env, pdata);
+                double c = getDataForInToken((*trace)->stm_expr->expr->triop->tin2, env, pdata);
+                if (approx(a, b, c)) {
+                    env->regs[16]=(*trace)->line+1;
+                    execute_jump(env, pdata, (*trace)->stm_expr->expr->triop->tin3);
+                }
                 break;
-            case BAPZ:
+            }
+            case BAPZ: {
+                double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                if(approx(a,0,b)){
+                    execute_jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2);
+                }
                 break;
-            case BAPZAL:
+            }
+            case BAPZAL:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                if(approx(a,0,b)){
+                    env->regs[16]=(*trace)->line+1;
+                    execute_jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2);
+                }
                 break;
-            case BDNS:
+            }
+            case BDNS:{
+                if(checkForDeviceConnected(env,))
                 break;
+            }
             case BDNSAL:
                 break;
             case BDSE:
@@ -282,10 +321,16 @@ void execute_stmt(Enviro *env,struct parsedata *pdata){
                 execute_jump(env,pdata,(*trace)->stm_expr->expr->cmd->cin1);
                 break;
             }
-            case JAL:
+            case JAL: {
+                env->regs[16]=(*trace)->line+1;
+                execute_jump(env, pdata, (*trace)->stm_expr->expr->triop->tin3);
                 break;
-            case JR:
+            }
+            case JR:{
+                int loc=(*trace)->line+(int)floor((getDataForInToken((*trace)->stm_expr->expr->cmd->cin1,env,pdata)));
+                jumpToLineNumber(env,pdata,loc);
                 break;
+            }
             case L:
                 break;
             case LB:
@@ -308,8 +353,14 @@ void execute_stmt(Enviro *env,struct parsedata *pdata){
                 break;
             case MOD:
                 break;
-            case MOVE:
+            case MOVE:{
+                if((*trace)->stm_expr->expr->unop->uout->tokenType==TT_REG){
+                    int idx= getOutReg((*trace)->stm_expr->expr->unop->uout,env,pdata);
+                    double fin= getDataForInToken((*trace)->stm_expr->expr->unop->uin1,env,pdata);
+                    env->regs[idx]=fin;
+                }
                 break;
+            }
             case MUL:
                 break;
             case NOR:

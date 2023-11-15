@@ -90,7 +90,7 @@ struct parsedata *Parse(TokenNode **tokenlist){
                     (* parsTracer)->stm_expr->expr->unop=new;
                     (* parsTracer)->line=out->lines;
                     if(new->uop->tokenType==TT_DEFINE || new->uop->tokenType==TT_ALIAS) {
-                        if(new->uin1->tokenType!=TT_REG && new->uin1->tokenType!=TT_DEVICE)
+                        if(new->uin1->tokenType!=TT_REG && new->uin1->tokenType!=TT_DEVICE&& new->uin1->tokenType!=TT_NUM)
                             break;
                         addRedefine(out, new->uout->string, new->uin1->string);
                     }
@@ -237,7 +237,6 @@ struct parsedata *Parse(TokenNode **tokenlist){
                         }
                     }
                     parsTracer = &(*parsTracer)->statement;
-                    listtracer=&(*listtracer)->next;
                     break;
                 }
                 case TNULL:
@@ -256,7 +255,8 @@ struct parsedata *Parse(TokenNode **tokenlist){
         out->line_table[(*tracer)->line-1]=(**tracer);
         tracer=&(*tracer)->statement;
     }
-
+    addRedefine(out,"sp","r16");
+    addRedefine(out,"ra","r17");
     return out;
 }
 void printTree(struct parsedata *tree){

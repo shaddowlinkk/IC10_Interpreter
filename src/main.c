@@ -12,19 +12,20 @@ int main() {
     getKeysEnv(env,&test);*/
     TokenNode *list;
     list=Lexer("../test_data/test.txt");
-    printlex(list);
+//    printlex(list);
     struct parsedata *start =Parse(&list);
     start->trace=&start->stmt;
-    printTree(start);
+//    printTree(start);
     Enviro *env=readinEniro("../test_data/sim.ic10e");
 /*    double r=getRegisterData("1",env,start);
     printf("rd:%.1lf\n",r);
     execute_stmt(&start->stmt,env,start);
      r=getRegisterData("r0",env,start);
     printf("rd:%.1lf\n",r);*/
-    while ((*start->trace)->statement!=NULL){
+   while ((*start->trace)->statement!=NULL){
+        execute_stmt(env,start);
         start->trace=&(*start->trace)->statement;
     }
-    execute_stmt(env,start);
+    printRegisters(env);
     printf("done");
 }

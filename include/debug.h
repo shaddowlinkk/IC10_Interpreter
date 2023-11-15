@@ -17,4 +17,5 @@ typedef struct _debug{
     struct devicelist *lists;
 }Debug;
 void getKeysEnv(Enviro *env,Debug *out);
+void printRegisters(Enviro *env);
 #endif //IC10_INTERPRETER_DEBUG_H

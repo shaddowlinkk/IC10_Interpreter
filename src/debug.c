@@ -22,6 +22,11 @@ void getkeys(char **list, Key **hashmap){
         }
     }
 }
+void printRegisters(Enviro *env){
+    for (int i = 0; i <=17 ; ++i) {
+        printf("reg %d: %.1lf\n",i,env->regs[i]);
+    }
+}
 void getKeysEnv(Enviro *env,Debug *out){
     for (int i = 0; i < env->numdevs; ++i) {
         if(env->devices[i]!=NULL) {
