@@ -49,7 +49,7 @@ struct parsedata *Parse(TokenNode **tokenlist){
     out->stmt=start;
     out->trace=NULL;
         while ((*listtracer)){
-            if((*listtracer)->token->tokenType==TT_NEWLINE){
+            if((*listtracer)->token->tokenType==TT_NEWLINE&&(*listtracer)->next!=NULL){
                 out->lines++;
                 if((*parsTracer)->stm_expr) {
                     Statement *new_state = malloc(sizeof(Statement));

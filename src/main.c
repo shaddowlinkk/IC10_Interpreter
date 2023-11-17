@@ -12,10 +12,10 @@ int main() {
     getKeysEnv(env,&test);*/
     TokenNode *list;
     list=Lexer("../test_data/test.txt");
-//    printlex(list);
-    struct parsedata *start =Parse(&list);
+    printlex(list);
+   struct parsedata *start =Parse(&list);
     start->trace=&start->stmt;
-//    printTree(start);
+    printTree(start);
     Enviro *env=readinEniro("../test_data/sim.ic10e");
 /*    double r=getRegisterData("1",env,start);
     printf("rd:%.1lf\n",r);
@@ -25,9 +25,11 @@ int main() {
 /*    int test = checkForDeviceConnected(env,70);
     printf("found device:%d\n",test);*/
    while ((*start->trace)!=NULL){
-       //printf("linenumber:%d\n",(*start->trace)->line);
+       printf("linenumber:%d\n",(*start->trace)->line);
         execute_stmt(env,start);
-        start->trace=&(*start->trace)->statement;
+        if((*start->trace)!=NULL) {
+            start->trace = &(*start->trace)->statement;
+        }
 
     }
     printRegisters(env);

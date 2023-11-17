@@ -88,13 +88,15 @@ void execute_binary_math(struct binop *data, Enviro *env, struct parsedata *pdat
 }
 void jumpToLineNumber(Enviro *env,struct parsedata *pdata,int num){
     int idx=num-2;// need to be this so the incremnet will index the jump right other option is to execute now so
-    while ((pdata->line_table+(sizeof (Statement)*idx))==NULL){
+    while ((pdata->line_table+(sizeof (Statement)*idx))==NULL&& idx+1<pdata->lines){
         idx++;
     }
-    if(pdata->line_table[idx].back!=NULL) {
+    if(idx+1>=pdata->lines){
+        *pdata->trace=NULL;
+    }else if(pdata->line_table[idx].back!=NULL) {
         pdata->trace = &pdata->line_table[idx].back->statement;
     }else{
-        (*pdata->trace)=&pdata->line_table[idx];
+        pdata->trace=&pdata->stmt;
     }
 }
 void execute_jump(Enviro *env,struct parsedata *pdata,Token *jumploc){
@@ -119,7 +121,6 @@ int approx(double a,double b,double c){
     return 0;
 }
 int checkForDeviceConnected(Enviro *env,int devNum){
-    // this can be oped my calculating adress for ideration <<tolazy at 11:16 to do it
     Device **start=env->devices;
     for (Device **end = &env->devices[env->numdevs]; start <=end ; start++) {
         if((*start)->device_num==devNum){
