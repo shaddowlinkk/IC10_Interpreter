@@ -9,8 +9,12 @@ double CSUB(double a,double b){return a-b;}
 double CMUL(double a,double b){return a*b;}
 double CDIV(double a,double b){return a/b;}
 double CAND(double a,double b){return (int)a&(int)b;}
+double COR(double a,double b){return (int)a|(int)b;}
+double CNOR(double a,double b){return (~(int)a)&(~(int)b);}
 double CXOR(double a,double b){return (int)a^(int)b;}
 double CBLS(double a,double b){return (int)a<<(int)b;}
 double CBRS(double a,double b){return (int)a>>(int)b;}
 double max(double a,double b){return a>b?a:b;};
+double min(double a,double b){return a<b?a:b;};
+double CNOT(double a){return ~(int)a;}
 #endif //IC10_INTERPRETER_INTERP_MATH_H

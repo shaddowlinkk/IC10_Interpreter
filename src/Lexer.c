@@ -3,6 +3,7 @@
 //
 
 #include "../include/Lexer.h"
+#include "../include/Util.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>

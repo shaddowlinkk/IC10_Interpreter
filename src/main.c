@@ -13,7 +13,7 @@ int main() {
     test.lists=NULL;
     getKeysEnv(env,&test);*/
     TokenNode *list;
-    list=Lexer("../test_data/test.txt");
+    list=Lexer("../test_data/ltest.txt");
     printlex(list);
    struct parsedata *start =Parse(&list);
     start->trace=&start->stmt;
@@ -41,5 +41,5 @@ int main() {
 
     printf("mips took %f seconds to execute \n", time_taken);
     printRegisters(env);
-    printf("done");
+    printf("done\n");
 }

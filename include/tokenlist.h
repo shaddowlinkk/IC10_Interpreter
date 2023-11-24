@@ -263,7 +263,7 @@ static struct commandToken commandList[]={
         {"lbn",TT_CMD,QUADOP,LBN},
         {"lbns",TT_CMD,QUINOP,LBNS},
         {"lbs",TT_CMD,QUADOP,LBS},
-        {"log",TT_CMD,BINOP,LOG},
+        {"log",TT_CMD,UNOP,LOG},
         {"lr",TT_CMD,TRIOP,LR},
         {"ls",TT_CMD,TRIOP,LS},
         {"max",TT_CMD,BINOP,MAX},

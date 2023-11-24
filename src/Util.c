@@ -3,6 +3,14 @@
 //
 
 #include "../include/Util.h"
+void tolowerall(char *string,int len){
+    for (int i = 0; i < len; ++i) {
+        if(string[i]<=90 && string[i]>=65){
+            string[i]=string[i]+32;
+        }
+    }
+
+}
 int hashcode(int size,const char *key){
     int prime=31;
     int hash=1;

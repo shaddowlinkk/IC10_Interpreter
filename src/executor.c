@@ -6,6 +6,7 @@
 #include "../include/parser.h"
 #include "../include/readEnviroment.h"
 #include "../include/interp_math.h"
+#include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -163,6 +164,42 @@ int checkForDeviceConnected(Enviro *env,int devNum){
         }
     }
     return 0;
+}
+int getHashValue(Token *token){
+    unsigned long long len= strlen(token->string);
+    char *p= token->string;
+    int flag=0;
+    int size=-1;
+    for (void *stop=&p[len];p!=stop;p++){
+        flag=(*p=='"')? ((flag+1)%2):flag;
+        if(flag){
+            size++;
+        }
+    }
+    char *tmp= malloc(size+1);
+    memset(tmp,0,size+1);
+    strncpy(tmp,token->string+6,size);
+    int out = crc32b(tmp);
+    free(tmp);
+    return out;
+}
+void execute_load(Enviro *env,struct parsedata *pdata,struct binop *exper){
+    int outreg= getOutReg(exper->bout,env,pdata);
+    int dev= getDeviceNum(env,pdata,exper->bin1);
+    Device **start=env->devices;
+    for (Device **end = &env->devices[env->numdevs]; start <=end ; start++) {
+        if((*start)->device_num==dev){
+            tolowerall(exper->bin2->string,strlen(exper->bin2->string));
+            int idx=(hashcode(strlen(exper->bin2->string), exper->bin2->string) % STORAGE_SIZE);
+            if((*start)->deviceParams[idx]!=NULL) {
+                env->regs[outreg] = (*((double *) (*start)->deviceParams[idx]->item));
+            }else{
+                char err[100];
+                sprintf(err,"could not find device Param enters line number:%d\n",(*pdata->trace)->line);
+                perror(err);
+            }
+        }
+    }
 }
 /**
  * this function is used to execute one statement on provided environment
@@ -636,6 +673,7 @@ void execute_stmt(Enviro *env,struct parsedata *pdata){
                 execute_unary_math((*trace)->stm_expr->expr->unop,env,pdata,exp);
                 break;
             case FLOOR:
+                execute_unary_math((*trace)->stm_expr->expr->unop,env,pdata,floor);
                 break;
             case J: {
                 jump(env,pdata,(*trace)->stm_expr->expr->cmd->cin1,N);
@@ -650,10 +688,14 @@ void execute_stmt(Enviro *env,struct parsedata *pdata){
                 jump(env,pdata,(*trace)->stm_expr->expr->cmd->cin1,R);
                 return;
             }
-            case L:
+            case L: {
+                execute_load(env,pdata,(*trace)->stm_expr->expr->binop);
                 break;
-            case LB:
+            }
+            case LB: {
+                getHashValue((*trace)->stm_expr->expr->triop->tin1);
                 break;
+            }
             case LBN:
                 break;
             case LBNS:
@@ -661,16 +703,20 @@ void execute_stmt(Enviro *env,struct parsedata *pdata){
             case LBS:
                 break;
             case LOG:
+                execute_unary_math((*trace)->stm_expr->expr->unop,env,pdata,log);
                 break;
             case LR:
                 break;
             case LS:
                 break;
             case MAX:
+                execute_binary_math((*trace)->stm_expr->expr->binop,env,pdata,max);
                 break;
             case MIN:
+                execute_binary_math((*trace)->stm_expr->expr->binop,env,pdata,min);
                 break;
             case MOD:
+                execute_binary_math((*trace)->stm_expr->expr->binop,env,pdata,fmod);
                 break;
             case MOVE:{
                 if((*trace)->stm_expr->expr->unop->uout->tokenType==TT_REG){
@@ -681,12 +727,16 @@ void execute_stmt(Enviro *env,struct parsedata *pdata){
                 break;
             }
             case MUL:
+                execute_binary_math((*trace)->stm_expr->expr->binop,env,pdata,CMUL);
                 break;
             case NOR:
+                execute_binary_math((*trace)->stm_expr->expr->binop,env,pdata,CNOR);
                 break;
             case NOT:
+                execute_unary_math((*trace)->stm_expr->expr->unop,env,pdata,CNOT);
                 break;
             case OR:
+                execute_binary_math((*trace)->stm_expr->expr->binop,env,pdata,COR);
                 break;
             case PEEK:
                 break;

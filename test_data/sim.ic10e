@@ -4,7 +4,7 @@
 		name="printer"
 		device hash="464894546"
 		[Device Params]
-		on=1
+		on=30
 		[Slot Params]
 		{}
 	}
