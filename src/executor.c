@@ -73,6 +73,20 @@ int getOutReg(Token *token,Enviro *env,struct parsedata *pdata){
     }
     return 0;
 }
+int getDeviceNum(Enviro *env, struct parsedata *pdata,Token *token){
+    int index=(hashcode(strlen(token->string),token->string)%REDEF_SIZE);
+    if (token->tokenType==TT_DEVICE){
+        return floor(getRegisterData(token->string+1,env,pdata));
+    }
+    else if(pdata->redef[index]!=NULL){
+        char *p=pdata->redef[index]->item;
+        if(*p=='d'){
+            return floor(getRegisterData((p+1),env,pdata));
+        } else{
+            exit(-7);
+        }
+    }
+}
 void execute_unary_math(struct unop *data, Enviro *env, struct parsedata *pdata, double (*opt) (double )){
         int idx=getOutReg(data->uout,env,pdata);
         double fin=getDataForInToken(data->uin1,env,pdata);
@@ -123,7 +137,7 @@ void jump(Enviro *env,struct parsedata *pdata,Token *jumploc,enum jumpType type)
             break;
         }
         case AL: {
-            env->regs[16]=(*pdata->trace)->line+1;
+            env->regs[17]=(*pdata->trace)->line+1;
             execute_jump(env, pdata, jumploc);
             break;
         }
@@ -193,8 +207,9 @@ void execute_stmt(Enviro *env,struct parsedata *pdata){
                 double c= getDataForInToken((*trace)->stm_expr->expr->triop->tin2,env,pdata);
                 if(approx(a,b,c)){
                     jump(env,pdata,(*trace)->stm_expr->expr->triop->tin3,N);
+                    return;
                 }
-                return;
+                break;
             }
             case BAPAL: {
                 double a = getDataForInToken((*trace)->stm_expr->expr->triop->tout, env, pdata);
@@ -202,148 +217,423 @@ void execute_stmt(Enviro *env,struct parsedata *pdata){
                 double c = getDataForInToken((*trace)->stm_expr->expr->triop->tin2, env, pdata);
                 if (approx(a, b, c)) {
                     jump(env, pdata, (*trace)->stm_expr->expr->triop->tin3,AL);
+                    return;
                 }
-                return;
+                break;
             }
             case BAPZ: {
                 double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
                 double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
                 if(approx(a,0,b)){
                     jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2,N);
+                    return;
                 }
-                return;
+                break;
             }
             case BAPZAL:{
                 double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
                 double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
                 if(approx(a,0,b)){
                     jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2,AL);
+                    return;
                 }
-                return;
+                break;
             }
             case BDNS:{
-               // if(checkForDeviceConnected(env,))
+                int dn= getDeviceNum(env,pdata,(*trace)->stm_expr->expr->unop->uout);
+                if(!checkForDeviceConnected(env,dn)){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,N);
+                    return;
+                }
                 break;
             }
-            case BDNSAL:
+            case BDNSAL:{
+                int dn= getDeviceNum(env,pdata,(*trace)->stm_expr->expr->unop->uout);
+                if(!checkForDeviceConnected(env,dn)){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,AL);
+                    return;
+                }
                 break;
-            case BDSE:
+            }
+            case BDSE:{
+                int dn= getDeviceNum(env,pdata,(*trace)->stm_expr->expr->unop->uout);
+                if(checkForDeviceConnected(env,dn)){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,N);
+                    return;
+                }
                 break;
-            case BDSEAL:
+            }
+            case BDSEAL:{
+                int dn= getDeviceNum(env,pdata,(*trace)->stm_expr->expr->unop->uout);
+                if(checkForDeviceConnected(env,dn)){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,AL);
+                    return;
+                }
                 break;
-            case BEQ:
+            }
+            case BEQ:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                if(a==b){
+                    jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2,N);
+                    return;
+                }
                 break;
-            case BEQAL:
+            }
+            case BEQAL:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                if(a==b){
+                    jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2,AL);
+                    return;
+                }
                 break;
-            case BEQZ:
+            }
+            case BEQZ:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->unop->uout,env,pdata);
+                if(a==0){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,N);
+                    return;
+                }
                 break;
-            case BEQZAL:
+            }
+            case BEQZAL:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->unop->uout,env,pdata);
+                if(a==0){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,AL);
+                    return;
+                }
                 break;
-            case BGE:
+            }
+            case BGE:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                if(a>=b){
+                    jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2,N);
+                    return;
+                }
                 break;
-            case BGEAL:
+            }
+            case BGEAL:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                if(a>=b){
+                    jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2,AL);
+                    return;
+                }
                 break;
-            case BGEZ:
+            }
+            case BGEZ:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->unop->uout,env,pdata);
+                if(a>=0){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,N);
+                    return;
+                }
                 break;
-            case BGEZAL:
+            }
+            case BGEZAL:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->unop->uout,env,pdata);
+                if(a>=0){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,AL);
+                    return;
+                }
                 break;
-            case BGT:
+            }
+            case BGT:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                if(a>b){
+                    jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2,N);
+                    return;
+                }
                 break;
-            case BGTAL:
+            }
+            case BGTAL:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                if(a>b){
+                    jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2,AL);
+                    return;
+                }
                 break;
-            case BGTZ:
+            }
+            case BGTZ:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->unop->uout,env,pdata);
+                if(a>0){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,N);
+                    return;
+                }
                 break;
-            case BGTZAL:
+            }
+            case BGTZAL:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->unop->uout,env,pdata);
+                if(a>0){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,AL);
+                    return;
+                }
                 break;
+            }
             case BLE: {
                 double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
                 double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
-                if (a<=b)
-                    jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2,N);
-                return;
+                if (a<=b) {
+                    jump(env, pdata, (*trace)->stm_expr->expr->binop->bin2, N);
+                    return;
+                }
+                break;
             }
-            case BLEAL:
+            case BLEAL:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                if (a<=b) {
+                    jump(env, pdata, (*trace)->stm_expr->expr->binop->bin2, AL);
+                    return;
+                }
                 break;
-            case BLEZ:
+            }
+            case BLEZ:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->unop->uout,env,pdata);
+                if(a<=0){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,N);
+                    return;
+                }
                 break;
-            case BLEZAL:
+            }
+            case BLEZAL:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->unop->uout,env,pdata);
+                if(a<=0){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,AL);
+                    return;
+                }
                 break;
+            }
             case BLT: {
                 double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
                 double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
-                if (a<b)
-                    jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2,N);
-                return;
+                if (a<b) {
+                    jump(env, pdata, (*trace)->stm_expr->expr->binop->bin2, N);
+                    return;
+                }
+                break;
             }
-            case BLTAL:
+            case BLTAL:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                if (a<b) {
+                    jump(env, pdata, (*trace)->stm_expr->expr->binop->bin2, AL);
+                    return;
+                }
                 break;
-            case BLTZ:
+            }
+            case BLTZ:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->unop->uout,env,pdata);
+                if(a<0){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,N);
+                    return;
+                }
                 break;
-            case BLTZAL:
+            }
+            case BLTZAL:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->unop->uout,env,pdata);
+                if(a<0){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,AL);
+                    return;
+                }
                 break;
+            }
             case BNA:
+                //not defined well in game will have to look at source
                 break;
             case BNAAL:
+                //not defined well in game will have to look at source
                 break;
             case BNAN:
+                // dont know how reping not num rightnow
                 break;
             case BNAZ:
+                //not defined well in game will have to look at source
                 break;
             case BNAZAL:
+                //not defined well in game will have to look at source
                 break;
-            case BNE:
+            case BNE:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                if (a!=b) {
+                    jump(env, pdata, (*trace)->stm_expr->expr->binop->bin2, N);
+                    return;
+                }
                 break;
-            case BNEAL:
+            }
+            case BNEAL:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                if (a!=b) {
+                    jump(env, pdata, (*trace)->stm_expr->expr->binop->bin2, AL);
+                    return;
+                }
                 break;
-            case BNEZ:
+            }
+            case BNEZ:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->unop->uout,env,pdata);
+                if(a!=0){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,N);
+                    return;
+                }
                 break;
-            case BNEZAL:
+            }
+            case BNEZAL:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->unop->uout,env,pdata);
+                if(a!=0){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,AL);
+                    return;
+                }
                 break;
+            }
             case BRAP:
+                //not defined well in game will have to look at source
                 break;
             case BRAPZ:
+                //not defined well in game will have to look at source
                 break;
-            case BRDNS:
+            case BRDNS:{
+                int dn= getDeviceNum(env,pdata,(*trace)->stm_expr->expr->unop->uout);
+                if(!checkForDeviceConnected(env,dn)){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,R);
+                    return;
+                }
                 break;
-            case BRDSE:
+            }
+            case BRDSE:{
+                int dn= getDeviceNum(env,pdata,(*trace)->stm_expr->expr->unop->uout);
+                if(checkForDeviceConnected(env,dn)){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,R);
+                    return;
+                }
                 break;
-            case BREQ:
+            }
+            case BREQ:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                if(a==b){
+                    jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2,R);
+                    return;
+                }
                 break;
-            case BREQZ:
+            }
+            case BREQZ:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->unop->uout,env,pdata);
+                if(a==0){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,R);
+                    return;
+                }
                 break;
-            case BRGE:
+            }
+            case BRGE:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                if(a>=b){
+                    jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2,R);
+                    return;
+                }
                 break;
-            case BRGEZ:
+            }
+            case BRGEZ:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->unop->uout,env,pdata);
+                if(a>=0){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,R);
+                    return;
+                }
                 break;
-            case BRGT:
+            }
+            case BRGT:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                if(a>b){
+                    jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2,R);
+                    return;
+                }
                 break;
-            case BRGTZ:
+            }
+            case BRGTZ:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->unop->uout,env,pdata);
+                if(a>0){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,R);
+                    return;
+                }
                 break;
-            case BRLE:
+            }
+            case BRLE:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                if(a<=b){
+                    jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2,R);
+                    return;
+                }
                 break;
-            case BRLEZ:
+            }
+            case BRLEZ:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->unop->uout,env,pdata);
+                if(a<=0){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,R);
+                    return;
+                }
                 break;
-            case BRLT:
+            }
+            case BRLT:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                if(a<b){
+                    jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2,R);
+                    return;
+                }
                 break;
-            case BRLTZ:
+            }
+            case BRLTZ:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->unop->uout,env,pdata);
+                if(a<0){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,R);
+                    return;
+                }
                 break;
+            }
             case BRNA:
+                //not defined well in game will have to look at source
                 break;
             case BRNAN:
+                // dont know how reping not num rightnow
                 break;
             case BRNAZ:
+                //not defined well in game will have to look at source
                 break;
-            case BRNE:
+            case BRNE:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
+                double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
+                if(a!=b){
+                    jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2,R);
+                    return;
+                }
                 break;
-            case BRNEZ:
+            }
+            case BRNEZ:{
+                double a = getDataForInToken((*trace)->stm_expr->expr->unop->uout,env,pdata);
+                if(a!=0){
+                    jump(env,pdata,(*trace)->stm_expr->expr->unop->uin1,R);
+                    return;
+                }
                 break;
+            }
             case CEIL:
+                execute_unary_math((*trace)->stm_expr->expr->unop,env,pdata,ceil);
                 break;
             case COS:
+                execute_unary_math((*trace)->stm_expr->expr->unop,env,pdata,cos);
                 break;
             case DIV:
+                execute_binary_math((*trace)->stm_expr->expr->binop,env,pdata,CDIV);
                 break;
             case EXP:
+                execute_unary_math((*trace)->stm_expr->expr->unop,env,pdata,exp);
                 break;
             case FLOOR:
                 break;

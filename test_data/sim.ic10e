@@ -9,4 +9,6 @@
 		{}
 	}
 [Registers]
+r4=1
+r5=1
 [Stack]

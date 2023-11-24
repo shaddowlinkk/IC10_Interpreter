@@ -1,4 +1,4 @@
-j test
+beqal r4 r5 test
 move rr0 20
 jr 4
 test:
