@@ -87,11 +87,11 @@ void execute_binary_math(struct binop *data, Enviro *env, struct parsedata *pdat
 
 }
 void jumpToLineNumber(Enviro *env,struct parsedata *pdata,int num){
-    int idx=num-2;// need to be this so the incremnet will index the jump right other option is to execute now so
-    while ((pdata->line_table+(sizeof (Statement)*idx))==NULL&& idx+1<pdata->lines){
+    int idx=num-1;// need to be this so the incremnet will index the jump right other option is to execute now so
+    while ((pdata->line_table+(sizeof (Statement)*idx))==NULL&& idx<pdata->lines){
         idx++;
     }
-    if(idx+1>=pdata->lines){
+    if(idx>=pdata->lines){
         *pdata->trace=NULL;
     }else if(pdata->line_table[idx].back!=NULL) {
         pdata->trace = &pdata->line_table[idx].back->statement;
@@ -114,6 +114,27 @@ void execute_jump(Enviro *env,struct parsedata *pdata,Token *jumploc){
     }else{
         exit(-6);
     }
+}
+enum jumpType{N,AL,R};
+void jump(Enviro *env,struct parsedata *pdata,Token *jumploc,enum jumpType type){
+    switch (type) {
+        case N: {
+            execute_jump(env, pdata, jumploc);
+            break;
+        }
+        case AL: {
+            env->regs[16]=(*pdata->trace)->line+1;
+            execute_jump(env, pdata, jumploc);
+            break;
+        }
+        case R: {
+            int ofset=(int)floor((getDataForInToken(jumploc,env,pdata)));
+            int loc=(*pdata->trace)->line+ofset;
+            jumpToLineNumber(env,pdata,loc);
+            break;
+        }
+    }
+
 }
 int approx(double a,double b,double c){
     if(fabs(a-b)<=max((c*max(a,b)),1.1210387714598537E-44))
@@ -171,36 +192,34 @@ void execute_stmt(Enviro *env,struct parsedata *pdata){
                 double b= getDataForInToken((*trace)->stm_expr->expr->triop->tin1,env,pdata);
                 double c= getDataForInToken((*trace)->stm_expr->expr->triop->tin2,env,pdata);
                 if(approx(a,b,c)){
-                    execute_jump(env,pdata,(*trace)->stm_expr->expr->triop->tin3);
+                    jump(env,pdata,(*trace)->stm_expr->expr->triop->tin3,N);
                 }
-                break;
+                return;
             }
             case BAPAL: {
                 double a = getDataForInToken((*trace)->stm_expr->expr->triop->tout, env, pdata);
                 double b = getDataForInToken((*trace)->stm_expr->expr->triop->tin1, env, pdata);
                 double c = getDataForInToken((*trace)->stm_expr->expr->triop->tin2, env, pdata);
                 if (approx(a, b, c)) {
-                    env->regs[16]=(*trace)->line+1;
-                    execute_jump(env, pdata, (*trace)->stm_expr->expr->triop->tin3);
+                    jump(env, pdata, (*trace)->stm_expr->expr->triop->tin3,AL);
                 }
-                break;
+                return;
             }
             case BAPZ: {
                 double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
                 double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
                 if(approx(a,0,b)){
-                    execute_jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2);
+                    jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2,N);
                 }
-                break;
+                return;
             }
             case BAPZAL:{
                 double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
                 double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
                 if(approx(a,0,b)){
-                    env->regs[16]=(*trace)->line+1;
-                    execute_jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2);
+                    jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2,AL);
                 }
-                break;
+                return;
             }
             case BDNS:{
                // if(checkForDeviceConnected(env,))
@@ -240,8 +259,8 @@ void execute_stmt(Enviro *env,struct parsedata *pdata){
                 double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
                 double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
                 if (a<=b)
-                    execute_jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2);
-                break;
+                    jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2,N);
+                return;
             }
             case BLEAL:
                 break;
@@ -253,8 +272,8 @@ void execute_stmt(Enviro *env,struct parsedata *pdata){
                 double a = getDataForInToken((*trace)->stm_expr->expr->binop->bout,env,pdata);
                 double b = getDataForInToken((*trace)->stm_expr->expr->binop->bin1,env,pdata);
                 if (a<b)
-                    execute_jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2);
-                break;
+                    jump(env,pdata,(*trace)->stm_expr->expr->binop->bin2,N);
+                return;
             }
             case BLTAL:
                 break;
@@ -329,19 +348,17 @@ void execute_stmt(Enviro *env,struct parsedata *pdata){
             case FLOOR:
                 break;
             case J: {
-                execute_jump(env,pdata,(*trace)->stm_expr->expr->cmd->cin1);
-                break;
+                jump(env,pdata,(*trace)->stm_expr->expr->cmd->cin1,N);
+                return;
             }
             case JAL: {
-                env->regs[16]=(*trace)->line+1;
-                execute_jump(env, pdata, (*trace)->stm_expr->expr->triop->tin3);
-                break;
+                jump(env, pdata, (*trace)->stm_expr->expr->cmd->cin1,AL);
+                return;
             }
             case JR:{
-                int ofset=(int)floor((getDataForInToken((*trace)->stm_expr->expr->cmd->cin1,env,pdata)));
-                int loc=(*trace)->line+ofset;
-                jumpToLineNumber(env,pdata,loc);
-                break;
+
+                jump(env,pdata,(*trace)->stm_expr->expr->cmd->cin1,R);
+                return;
             }
             case L:
                 break;
@@ -469,6 +486,7 @@ void execute_stmt(Enviro *env,struct parsedata *pdata){
                 break;
         }
     }
+    pdata->trace = &(*pdata->trace)->statement;
 }
 
 

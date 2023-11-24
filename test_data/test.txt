@@ -1,5 +1,5 @@
 j test
-move r0 20
+move rr0 20
 jr 4
 test:
 add r0 r0 1

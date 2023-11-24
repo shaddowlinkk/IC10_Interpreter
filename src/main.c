@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <time.h>
+#include <Windows.h>
 #include "../include/Lexer.h"
 #include "../include/Parser.h"
 #include "../include/readEnviroment.h"
@@ -24,14 +26,20 @@ int main() {
     printf("rd:%.1lf\n",r);*/
 /*    int test = checkForDeviceConnected(env,70);
     printf("found device:%d\n",test);*/
-   while ((*start->trace)!=NULL){
+//todo at 1000 lines it start acting weird but after 1000 it if ok?
+    clock_t t;
+    t = clock();
+    printf("mips started\n");
+    while ((*start->trace)!=NULL){
        printf("linenumber:%d\n",(*start->trace)->line);
         execute_stmt(env,start);
-        if((*start->trace)!=NULL) {
-            start->trace = &(*start->trace)->statement;
-        }
 
     }
+
+    t = clock() - t;
+    double time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds
+
+    printf("mips took %f seconds to execute \n", time_taken);
     printRegisters(env);
     printf("done");
 }
