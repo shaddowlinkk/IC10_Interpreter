@@ -693,6 +693,7 @@ void execute_stmt(Enviro *env,struct parsedata *pdata){
                 break;
             }
             case LB: {
+                //TODO need to finish this
                 getHashValue((*trace)->stm_expr->expr->triop->tin1);
                 break;
             }
