@@ -23,6 +23,7 @@ typedef struct _device{
     int name_size;
     int device_num;
     int num_slots;
+    int hash;
     Key **deviceSettings; // item type double
     struct slotnode *slotParams;// item type double
     Key **deviceParams; // item type double

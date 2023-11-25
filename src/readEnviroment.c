@@ -31,7 +31,7 @@ void splitqw(char *data,char **out){
     strcat(data,"\0");
     int size=0;
     while (data[pos]!='\0'){
-        if (data[pos] != '\t' && data[pos] != ' ' && data[pos] != '"') {
+        if (data[pos] != '\t' && data[pos] != '"') {
             if (data[pos] == '=') {
                 size++;
                 out[index] = malloc(size);
@@ -148,6 +148,7 @@ Device *InitDevice(){
     new_d->slotParams=NULL;
     new_d->deviceSettings=NULL;
     new_d->name=NULL;
+    new_d->hash=0;
     new_d->name_size=0;
     new_d->num_slots=0;
     new_d->device_num=-1;
@@ -205,6 +206,8 @@ Device **getDevices(char *data,int *pos,int *devs){
                     memset(new_d->name,0,size);
                     strncpy_s(new_d->name,size,split_data[1],size-1);
                     //printf("\t\tname:\n\t\t\tparam_name:%s\n\t\t\tparam_val:%s\n",split_data[0],split_data[1]);
+                }else if(strncmp(split_data[0],"device hash",11)==0) {
+                    new_d->hash= strtol(split_data[1],NULL,0);
                 }else {
                     switch (currstate) {
                         case settings: {

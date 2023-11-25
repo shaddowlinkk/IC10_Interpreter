@@ -18,7 +18,7 @@ int main() {
    struct parsedata *start =Parse(&list);
     start->trace=&start->stmt;
     printTree(start);
-    Enviro *env=readinEniro("../test_data/sim.ic10e");
+    Enviro *env=readinEniro("../test_data/LB_test.ic10e");
 /*    double r=getRegisterData("1",env,start);
     printf("rd:%.1lf\n",r);
     execute_stmt(&start->stmt,env,start);

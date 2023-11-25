@@ -1,0 +1,30 @@
+[Devices]
+	{
+		[Device settings]
+		name="printer"
+		device hash="1155865682"
+		[Device Params]
+		on=30
+		[Slot Params]
+		{}
+	},{
+		[Device settings]
+		name="printer2"
+		device hash="1155865682"
+		[Device Params]
+		on=40
+		[Slot Params]
+		{}
+	},{
+    	[Device settings]
+     	name="printer3"
+     	device hash="1155865682"
+     	[Device Params]
+     	on=10
+     	[Slot Params]
+     	{}
+     }
+[Registers]
+r4=0
+r5=1
+[Stack]

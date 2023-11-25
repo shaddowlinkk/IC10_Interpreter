@@ -7,7 +7,7 @@
 #include "Grammer.h"
 #include "Util.h"
 #define REDEF_SIZE 128
-//todo add aa redefine for Ra and SP
+
 struct parsedata{
     Key *lables[512];//item type statment
     Key *redef[128];

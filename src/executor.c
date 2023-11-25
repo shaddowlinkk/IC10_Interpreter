@@ -201,6 +201,97 @@ void execute_load(Enviro *env,struct parsedata *pdata,struct binop *exper){
         }
     }
 }
+enum batchType{AV,SU,MI,MX};
+void execute_batchLoad(Enviro *env,struct parsedata *pdata,struct triop *exper){
+    int outreg= getOutReg(exper->tout,env,pdata);
+    int hash=(exper->tin1->tokenType==TT_NUM)? strtol(exper->tin1->string,NULL,0): getHashValue(exper->tin1);
+    int type=(exper->tin3->tokenType==TT_NUM)? strtol(exper->tin3->string,NULL,0): getRegisterData(exper->tin3->string,env,pdata);
+    Device **start=env->devices;
+    int flag=0;
+    int size=0;
+    double tmp=0.0;
+    for (Device **end = &env->devices[env->numdevs]; start <=end ; start++) {
+        if((*start)->hash==hash){
+            int idx=(hashcode(strlen(exper->tin2->string), exper->tin2->string) % STORAGE_SIZE);
+            double val =(*((double *) (*start)->deviceParams[idx]->item));
+            switch (type) {
+                case AV:{
+                    tmp+= val;
+                    size++;
+                    break;
+                }
+                case SU:{
+                    tmp+=val;
+                    break;
+                }
+                case MI:{
+                    if(!flag){
+                        tmp=val;
+                        flag++;
+                    }else{
+                        tmp = min(tmp, val);
+                    }
+                    break;
+                }
+                default:{
+                    if(!flag){
+                        tmp=val;
+                        flag++;
+                    }else {
+                        tmp = max(tmp, val);
+                    }
+                }
+            }
+        }
+    }
+    env->regs[outreg]=(type==AV)? tmp/size:tmp;
+}
+void execute_batchLoadName(Enviro *env,struct parsedata *pdata,struct quadop *exper){
+    int outreg= getOutReg(exper->qout,env,pdata);
+    int hash=(exper->qin1->tokenType==TT_NUM)? strtol(exper->qin1->string,NULL,0): getHashValue(exper->qin1);
+    int nameHash=(exper->qin2->tokenType==TT_NUM)? strtol(exper->qin2->string,NULL,0): getHashValue(exper->qin2);
+    int type=(exper->qin4->tokenType==TT_NUM)? strtol(exper->qin4->string,NULL,0): getRegisterData(exper->qin4->string,env,pdata);
+    Device **start=env->devices;
+    int flag=0;
+    int size=0;
+    double tmp=0.0;
+    for (Device **end = &env->devices[env->numdevs]; start <=end ; start++) {
+        int s_name= crc32b((*start)->name);
+        if((*start)->hash==hash && s_name==nameHash){
+            int idx=(hashcode(strlen(exper->qin3->string), exper->qin3->string) % STORAGE_SIZE);
+            double val =(*((double *) (*start)->deviceParams[idx]->item));
+            switch (type) {
+                case AV:{
+                    tmp+= val;
+                    size++;
+                    break;
+                }
+                case SU:{
+                    tmp+=val;
+                    break;
+                }
+                case MI:{
+                    if(!flag){
+                        tmp=val;
+                        flag++;
+                    }else{
+                        tmp = min(tmp, val);
+                    }
+                    break;
+                }
+                default:{
+                    if(!flag){
+                        tmp=val;
+                        flag++;
+                    }else {
+                        tmp = max(tmp, val);
+                    }
+                }
+            }
+        }
+    }
+    env->regs[outreg]=(type==AV)? tmp/size:tmp;
+}
 /**
  * this function is used to execute one statement on provided environment
  * @param trace the pointer to a pointer that is the statement that you want to execute
@@ -693,11 +784,11 @@ void execute_stmt(Enviro *env,struct parsedata *pdata){
                 break;
             }
             case LB: {
-                //TODO need to finish this
-                getHashValue((*trace)->stm_expr->expr->triop->tin1);
+                execute_batchLoad(env,pdata,(*trace)->stm_expr->expr->triop);
                 break;
             }
             case LBN:
+                execute_batchLoadName(env,pdata,(*trace)->stm_expr->expr->quadop);
                 break;
             case LBNS:
                 break;
