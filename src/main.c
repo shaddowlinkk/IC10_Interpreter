@@ -12,6 +12,8 @@ int main() {
     Debug test;
     test.lists=NULL;
     getKeysEnv(env,&test);*/
+   double test= 0.0/0.0;
+   printf("test:%lf\n",test);
     TokenNode *list;
     list=Lexer("../test_data/ltest.txt");
     printlex(list);

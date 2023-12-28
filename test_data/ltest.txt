@@ -1,1 +1,2 @@
-lb r0 HASH("StructureSDBSilo") on r4
+lb r0 HASH("StructureSDBSilo") on 1
+

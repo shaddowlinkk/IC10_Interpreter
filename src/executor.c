@@ -87,6 +87,7 @@ int getDeviceNum(Enviro *env, struct parsedata *pdata,Token *token){
             exit(-7);
         }
     }
+    return 0;
 }
 void execute_unary_math(struct unop *data, Enviro *env, struct parsedata *pdata, double (*opt) (double )){
         int idx=getOutReg(data->uout,env,pdata);
